@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "pretendard/dist/web/static/pretendard.css";
+
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --color-card: #f5f5f5;
+
+  --color-primary: #185FA5;
+  --color-primary-hover: #144e8a;
+
+  --color-correct: #3B6D11;
+  --color-wrong: #A32D2D;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
