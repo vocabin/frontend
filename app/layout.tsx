@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
   title: "Vocabin",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased bg-background text-foreground">
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }
