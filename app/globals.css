@@ -24,24 +24,88 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 플래시카드 전환 */
+/* ── 페이지 전환 ─────────────────────────────────────────────────────────── */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-in {
+  animation: page-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── 리스트 스태거 ───────────────────────────────────────────────────────── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger > * {
+  animation: slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger > *:nth-child(1)  { animation-delay: 40ms; }
+.stagger > *:nth-child(2)  { animation-delay: 80ms; }
+.stagger > *:nth-child(3)  { animation-delay: 120ms; }
+.stagger > *:nth-child(4)  { animation-delay: 160ms; }
+.stagger > *:nth-child(5)  { animation-delay: 200ms; }
+.stagger > *:nth-child(6)  { animation-delay: 240ms; }
+.stagger > *:nth-child(7)  { animation-delay: 280ms; }
+.stagger > *:nth-child(8)  { animation-delay: 320ms; }
+.stagger > *:nth-child(n+9) { animation-delay: 360ms; }
+
+/* ── 카드 hover ──────────────────────────────────────────────────────────── */
+.card-lift {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease;
+  will-change: transform;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.card-lift:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* ── 버튼 press ──────────────────────────────────────────────────────────── */
+.btn-press {
+  transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.15s ease;
+}
+.btn-press:active { transform: scale(0.95); }
+
+/* ── 플래시카드 전환 ──────────────────────────────────────────────────────── */
 @keyframes card-exit {
-  from { opacity: 1; transform: translateY(0)    scale(1);    }
+  from { opacity: 1; transform: translateY(0)    scale(1); }
   to   { opacity: 0; transform: translateY(-20px) scale(0.96); }
 }
 @keyframes card-enter {
   from { opacity: 0; transform: translateY(20px)  scale(0.96); }
-  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+  to   { opacity: 1; transform: translateY(0)     scale(1); }
 }
 .card-exit  { animation: card-exit  0.14s cubic-bezier(0.4, 0, 1, 1)  forwards; }
 .card-enter { animation: card-enter 0.18s cubic-bezier(0, 0, 0.2, 1)  forwards; }
 
-/* 바 채우기 */
+/* ── 바 채우기 ───────────────────────────────────────────────────────────── */
 @keyframes bar-fill {
   from { height: 0; opacity: 0; }
 }
 .bar-fill { animation: bar-fill 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* 스크롤바 숨김 */
+/* ── 숫자 등장 ───────────────────────────────────────────────────────────── */
+@keyframes num-pop {
+  0%   { opacity: 0; transform: scale(0.75); }
+  70%  { transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.num-pop { animation: num-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── 페이드인 ────────────────────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fade-in 0.3s ease both; }
+
+/* ── 스크롤바 숨김 ───────────────────────────────────────────────────────── */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

@@ -88,15 +88,15 @@ export default function StatsPage() {
 
       {/* 요약 카드 */}
       {summary && (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-card border border-white/[0.05] rounded-xl p-4">
+        <div className="grid grid-cols-2 gap-2 stagger">
+          <div className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift">
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-2">총 단어</p>
-            <p className="text-3xl font-bold text-foreground tabular-nums">{summary.totalWords}</p>
+            <p className="text-3xl font-bold text-foreground tabular-nums num-pop">{summary.totalWords}</p>
             <p className="text-[11px] text-slate-600 mt-1">개</p>
           </div>
-          <div className="bg-card border border-white/[0.05] rounded-xl p-4">
+          <div className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift">
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-2">전체 정답률</p>
-            <p className="text-3xl font-bold text-primary tabular-nums">{Math.round(summary.correctRate * 100)}</p>
+            <p className="text-3xl font-bold text-primary tabular-nums num-pop">{Math.round(summary.correctRate * 100)}</p>
             <p className="text-[11px] text-slate-600 mt-1">%</p>
           </div>
           <div className="bg-card border border-white/[0.05] rounded-xl p-3.5">
