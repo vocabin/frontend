@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import BottomTabBar from "./BottomTabBar";
+import OnboardingModal from "./OnboardingModal";
 
 const AUTH_PATHS = ["/login", "/register"];
 
@@ -17,7 +18,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Sidebar />
-      <main className="md:ml-60 min-h-screen pb-20 md:pb-0">
+      <OnboardingModal />
+      <main className="md:ml-56 min-h-screen pb-20 md:pb-0">
         {children}
       </main>
       <BottomTabBar />

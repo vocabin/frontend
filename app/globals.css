@@ -2,34 +2,46 @@
 @import "pretendard/dist/web/static/pretendard.css";
 
 @theme inline {
-  /* ── 토스 스타일 컬러 시스템 (다크/남색 배경) ── */
-  --color-background: #0f172a;   /* 페이지 배경: 진한 남색 (slate-900) */
-  --color-foreground: #f8fafc;   /* 기본 텍스트: 밝은 회백색 (slate-50) */
-  --color-card:       #1e293b;   /* 카드: 약간 밝은 남색 (slate-800) */
+  --color-background: #0a0f1e;
+  --color-foreground: #f1f5f9;
+  --color-card:       #0f1629;
 
-  --color-primary:       #3182F6;  /* 토스 블루 (포인트 컬러) */
+  --color-primary:       #3182F6;
   --color-primary-hover: #2070E8;
 
-  --color-correct: #4ade80;      /* 다크모드에 맞는 밝은 초록 */
-  --color-wrong:   #f87171;      /* 다크모드에 맞는 밝은 빨강 */
+  --color-correct: #4ade80;
+  --color-wrong:   #f87171;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background-image:
+    radial-gradient(ellipse 70% 40% at 15% 0%, rgba(49, 130, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.022) 1px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── 플래시카드 카드 전환 애니메이션 (현대적 / 빠름) ── */
+/* 플래시카드 전환 */
 @keyframes card-exit {
   from { opacity: 1; transform: translateY(0)    scale(1);    }
-  to   { opacity: 0; transform: translateY(-24px) scale(0.95); }
+  to   { opacity: 0; transform: translateY(-20px) scale(0.96); }
 }
 @keyframes card-enter {
-  from { opacity: 0; transform: translateY(24px)  scale(0.95); }
+  from { opacity: 0; transform: translateY(20px)  scale(0.96); }
   to   { opacity: 1; transform: translateY(0)     scale(1);    }
 }
+.card-exit  { animation: card-exit  0.14s cubic-bezier(0.4, 0, 1, 1)  forwards; }
+.card-enter { animation: card-enter 0.18s cubic-bezier(0, 0, 0.2, 1)  forwards; }
 
-.card-exit  { animation: card-exit  0.14s cubic-bezier(0.4, 0, 1, 1)    forwards; }
-.card-enter { animation: card-enter 0.18s cubic-bezier(0, 0, 0.2, 1)    forwards; }
+/* 바 채우기 */
+@keyframes bar-fill {
+  from { height: 0; opacity: 0; }
+}
+.bar-fill { animation: bar-fill 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+/* 스크롤바 숨김 */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
