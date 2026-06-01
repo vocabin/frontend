@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const TAB_ITEMS = [
   {
@@ -49,25 +50,57 @@ const TAB_ITEMS = [
 
 export default function BottomTabBar() {
   const pathname = usePathname();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [pill, setPill] = useState({ left: 0, width: 32, opacity: 0 });
+
+  const activeIndex = TAB_ITEMS.findIndex((item) =>
+    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+  );
+
+  useEffect(() => {
+    const el = tabRefs.current[activeIndex];
+    const container = containerRef.current;
+    if (!el || !container) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setPill({
+      left: elRect.left - containerRect.left + elRect.width / 2 - 16,
+      width: 32,
+      opacity: 1,
+    });
+  }, [activeIndex]);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-slate-800/60 z-40 safe-area-inset-bottom">
-      <div className="flex">
-        {TAB_ITEMS.map((item) => {
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-white/[0.05] z-40">
+      <div ref={containerRef} className="flex relative">
+        {/* 슬라이딩 상단 바 인디케이터 */}
+        <div
+          className="absolute top-0 h-0.5 bg-primary rounded-full pointer-events-none"
+          style={{
+            left: pill.left,
+            width: pill.width,
+            opacity: pill.opacity,
+            transition: "left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease",
+          }}
+        />
+
+        {TAB_ITEMS.map((item, i) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors duration-150 ${
+              ref={(el) => { tabRefs.current[i] = el; }}
+              className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-all duration-200 active:scale-90 ${
                 isActive ? "text-primary" : "text-slate-500 hover:text-slate-300"
               }`}
             >
-              {item.icon(isActive)}
-              <span className={`text-[10px] font-medium ${isActive ? "text-primary" : "text-slate-500"}`}>
+              <span className={`transition-transform duration-200 ${isActive ? "scale-110" : "scale-100"}`}>
+                {item.icon(isActive)}
+              </span>
+              <span className={`text-[10px] font-medium transition-colors duration-150 ${isActive ? "text-primary" : "text-slate-500"}`}>
                 {item.label}
               </span>
             </Link>

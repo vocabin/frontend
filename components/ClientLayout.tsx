@@ -19,7 +19,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <>
       <Sidebar />
       <OnboardingModal />
-      <main className="md:ml-56 min-h-screen pb-20 md:pb-0">
+      <main key={pathname} className="md:ml-56 min-h-screen pb-20 md:pb-0 page-in">
         {children}
       </main>
       <BottomTabBar />
