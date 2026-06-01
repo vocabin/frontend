@@ -29,6 +29,7 @@ export default function HomePage() {
           totalWords: 135,
           totalSessions: 18,
           totalCorrectRate: 68,
+          weakWordCount: 12,
         });
       })
       .finally(() => setLoading(false));
@@ -62,11 +63,23 @@ export default function HomePage() {
             <p className="text-xs text-slate-400 mt-1">이번 주 정답률</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{summary.streakDays}일</p>
-            <p className="text-xs text-slate-400 mt-1">연속 학습</p>
+            <p className="text-2xl font-bold text-wrong">{summary.weakWordCount}</p>
+            <p className="text-xs text-slate-400 mt-1">취약 단어 수</p>
           </div>
         </div>
       )}
+
+      {/* 전체 학습 모드 */}
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        <Link href="/study/flashcard" className="bg-card rounded-2xl p-5 hover:bg-slate-800/70 transition-colors">
+          <p className="text-sm font-semibold text-foreground mb-1">플래시카드</p>
+          <p className="text-xs text-slate-400">전체 단어 SM-2 복습</p>
+        </Link>
+        <Link href="/study/speedrun" className="bg-card rounded-2xl p-5 hover:bg-slate-800/70 transition-colors">
+          <p className="text-sm font-semibold text-foreground mb-1">스피드런</p>
+          <p className="text-xs text-slate-400">60초 타임어택</p>
+        </Link>
+      </div>
 
       {/* 세트별 진행률 카드 */}
       <div className="flex items-center justify-between mb-4">
@@ -99,27 +112,13 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* 학습 모드 버튼 */}
-              <div className="flex gap-2">
-                <Link
-                  href={`/study/flashcard?wordSetId=${set.id}`}
-                  className="flex-1 text-center py-2 bg-primary text-white text-xs font-medium rounded-xl hover:bg-primary-hover transition-colors"
-                >
-                  플래시카드
-                </Link>
-                <Link
-                  href={`/study/speedrun?wordSetId=${set.id}`}
-                  className="flex-1 text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
-                >
-                  스피드런
-                </Link>
-                <Link
-                  href={`/study/weak?wordSetId=${set.id}`}
-                  className="flex-1 text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
-                >
-                  취약 단어
-                </Link>
-              </div>
+              {/* 취약 단어 버튼 */}
+              <Link
+                href={`/study/weak?wordSetId=${set.id}`}
+                className="block text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
+              >
+                취약 단어
+              </Link>
             </div>
           );
         })}

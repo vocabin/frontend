@@ -25,6 +25,7 @@ export interface StatsSummary {
   totalWords: number;
   totalSessions: number;
   totalCorrectRate: number;
+  weakWordCount: number;
 }
 
 export interface WeeklyStats {
@@ -104,6 +105,10 @@ export const wordSetsApi = {
 export const wordsApi = {
   getByWordSet: (wordSetId: number) =>
     api.get<Word[]>(`/api/word-sets/${wordSetId}/words`),
+
+  getDue: () => api.get<Word[]>("/api/words/due"),
+
+  getRandom: () => api.get<Word[]>("/api/words/random"),
 
   getWeak: (wordSetId?: number) =>
     api.get<Word[]>("/api/words/weak", {

@@ -34,13 +34,14 @@ GitHub: https://github.com/vocabin/backend
 
 | 항목 | 값 |
 |------|-----|
-| 컨셉 | 토스 스타일 플랫 디자인 |
-| 배경 | 흰색 (`#ffffff`) |
-| 카드 배경 | 연한 회색 (`#f5f5f5`) |
+| 컨셉 | 토스 스타일 플랫 디자인 (다크 모드) |
+| 배경 | 네이비 (`#0f172a`) |
+| 카드 배경 | 진한 회색/남색 (`#1e293b`) |
 | 메인 컬러 | `#185FA5` (블루) — `text-primary`, `bg-primary` |
 | 정답 색상 | `#3B6D11` (초록) — `text-correct` |
 | 오답 색상 | `#A32D2D` (빨강) — `text-wrong` |
-| 코너 반경 | `rounded-xl` (기본), `rounded-2xl` (카드) |
+| 텍스트 | `#f8fafc` (`text-foreground`), 회색조(`text-slate-400/500`) |
+| 코너 반경 | `rounded-xl` (기본), `rounded-2xl`, `rounded-3xl` (카드) |
 | 폰트 | Pretendard (이미 globals.css에 적용됨) |
 | 불필요한 장식 없이 핵심 정보만 표시 ||
 
@@ -107,7 +108,7 @@ app/
 | Method | Endpoint | 용도 |
 |--------|----------|------|
 | GET | `/api/word-sets` | 세트 목록 + 진행률 카드 |
-| GET | `/api/stats/summary` | 오늘 복습할 단어 수 / 이번 주 정답률 / 연속 학습일 |
+| GET | `/api/stats/summary` | 오늘 복습할 단어 수 / 이번 주 정답률 / 취약 단어 수 |
 
 ### 단어 목록 (`/words`)
 | Method | Endpoint | 용도 |
@@ -128,14 +129,14 @@ app/
 ### 플래시카드 (`/study/flashcard`)
 | Method | Endpoint | 용도 |
 |--------|----------|------|
-| GET | `/api/word-sets/{wordSetId}/words` | 학습할 단어 목록 |
+| GET | `/api/words/due` | SM-2 우선순위 단어 목록 (전체 랜덤, 복습 예정 우선) |
 | POST | `/api/study/records` | O/X 결과 기록 (mode=FLASHCARD) |
 | PUT | `/api/words/{wordId}` | 카드 우상단 수정 버튼 |
 
 ### 스피드 런 (`/study/speedrun`)
 | Method | Endpoint | 용도 |
 |--------|----------|------|
-| GET | `/api/word-sets/{wordSetId}/words` | 학습할 단어 목록 |
+| GET | `/api/words/due` | SM-2 우선순위 단어 목록 (전체 랜덤, 복습 예정 우선) |
 | POST | `/api/study/records` | O/X 결과 기록 (mode=SPEEDRUN) |
 
 ### 취약 단어 (`/study/weak`)
@@ -148,7 +149,7 @@ app/
 ### 통계 (`/stats`)
 | Method | Endpoint | 용도 |
 |--------|----------|------|
-| GET | `/api/stats/summary` | 총 단어 수 / 전체 정답률 / 연속 학습일 / 총 세션 수 |
+| GET | `/api/stats/summary` | 총 단어 수 / 전체 정답률 / 총 세션 수 / 취약 단어 수 |
 | GET | `/api/stats/weekly` | 이번 주 요일별 정답률 (차트) |
 | GET | `/api/stats/calendar` | 월별 학습 히트맵 (`?year=&month=`) |
 | GET | `/api/word-sets/progress` | 세트별 진행률 |
@@ -170,6 +171,23 @@ app/
 | POST | `/api/auth/register` | 회원가입 |
 | POST | `/api/auth/login` | 로그인 → Access Token 반환 + Refresh Token 쿠키 설정 |
 | POST | `/api/auth/refresh` | Access Token 재발급 (Axios interceptor에서 자동 호출) |
+
+---
+
+## 핵심 학습 구조 (SM-2 전역 복습)
+
+플래시카드·스피드런은 **단어 세트 구분 없이** 전체 단어 풀에서 SM-2 알고리즘으로 우선순위를 정해 단어를 제공합니다.
+
+`GET /api/words/due` 응답 순서:
+```
+1순위: 복습 예정 단어 (nextReviewAt <= 오늘) — 날짜 오름차순
+2순위: 신규 단어 (ReviewSchedule 없음)       — 랜덤
+3순위: 아직 복습 안 해도 되는 단어           — 랜덤 (추가 연습)
+```
+
+`POST /api/study/records` 호출 시 백엔드가 자동으로 SM-2 스케줄을 갱신합니다 (정답 → interval 연장, 오답 → interval 초기화).
+
+단어 세트(`/words`)는 **단어 관리 전용** (업로드/수정/삭제) — 학습 흐름과 분리됩니다.
 
 ---
 

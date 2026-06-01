@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { wordsApi, studyApi, wordSetsApi, Word, WordSet } from "@/lib/api";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { wordsApi, studyApi, Word } from "@/lib/api";
 
 const DUMMY_WORDS: Word[] = [
   { id: 1, term: "abandon",    definition: "포기하다, 버리다",    wordSetId: 1, weakCount: 0 },
@@ -14,12 +14,9 @@ const DUMMY_WORDS: Word[] = [
 
 type AnimState = "idle" | "exit" | "enter";
 
-function FlashcardContent() {
-  const searchParams = useSearchParams();
+export default function FlashcardPage() {
   const router = useRouter();
-  const wordSetId = searchParams.get("wordSetId");
 
-  const [wordSets, setWordSets]   = useState<WordSet[]>([]);
   const [words, setWords]         = useState<Word[]>([]);
   const [index, setIndex]         = useState(0);
   const [flipped, setFlipped]     = useState(false);
@@ -31,31 +28,18 @@ function FlashcardContent() {
   const [editTerm, setEditTerm]   = useState("");
   const [editDef, setEditDef]     = useState("");
 
-  useEffect(() => {
-    wordSetsApi.getAll()
-      .then((r) => setWordSets(r.data))
-      .catch(() => setWordSets([
-        { id: 1, name: "Week 1 — 기초 어휘", wordCount: 5, learnedCount: 3, correctRate: 80 },
-        { id: 2, name: "Week 2 — 중급 어휘", wordCount: 5, learnedCount: 1, correctRate: 62 },
-      ]));
-  }, []);
-
-  const loadWords = useCallback((id: number) => {
+  const loadWords = useCallback(() => {
     setLoading(true);
     setIndex(0); setFlipped(false); setFinished(false);
     setResults({ correct: 0, wrong: 0 }); setAnimState("idle");
-    wordsApi.getByWordSet(id)
+    wordsApi.getDue()
       .then((r) => setWords(r.data))
       .catch(() => setWords(DUMMY_WORDS))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (wordSetId) loadWords(Number(wordSetId));
-    else setLoading(false);
-  }, [wordSetId, loadWords]);
+  useEffect(() => { loadWords(); }, [loadWords]);
 
-  // ── 카드 전환 (새 애니메이션) ────────────────────────────────────────
   const goNext = useCallback(async (correct: boolean) => {
     if (animState !== "idle") return;
     const word = words[index];
@@ -63,18 +47,15 @@ function FlashcardContent() {
     setResults((r) => ({ correct: r.correct + (correct ? 1 : 0), wrong: r.wrong + (correct ? 0 : 1) }));
 
     setAnimState("exit");
-    // exit 완료 (140ms) 후 다음 카드로
     setTimeout(() => {
       if (index + 1 >= words.length) { setFinished(true); setAnimState("idle"); return; }
       setIndex((i) => i + 1);
       setFlipped(false);
       setAnimState("enter");
-      // enter 완료 (180ms) 후 idle
       setTimeout(() => setAnimState("idle"), 180);
     }, 140);
   }, [animState, words, index]);
 
-  // ── 키보드 단축키 ────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (editingWord) return;
@@ -93,34 +74,12 @@ function FlashcardContent() {
     setEditingWord(null);
   };
 
-  // ── 세트 선택 화면 ───────────────────────────────────────────────────
-  if (!wordSetId) {
-    return (
-      <div className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">플래시카드</h1>
-        <p className="text-sm text-slate-400 mb-6">학습할 단어 세트를 선택하세요</p>
-        <div className="space-y-2">
-          {wordSets.map((set) => (
-            <button key={set.id}
-              onClick={() => router.push(`/study/flashcard?wordSetId=${set.id}`)}
-              className="w-full bg-card rounded-2xl p-5 text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
-            >
-              <p className="font-semibold text-sm text-foreground">{set.name}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{set.wordCount}단어</p>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  // ── 결과 화면 ────────────────────────────────────────────────────────
   if (finished) {
     const total = results.correct + results.wrong;
     const rate  = total > 0 ? Math.round((results.correct / total) * 100) : 0;
@@ -139,7 +98,7 @@ function FlashcardContent() {
           <div className="text-center"><p className="text-3xl font-bold text-primary">{rate}%</p><p className="text-xs text-slate-500 mt-1">정답률</p></div>
         </div>
         <div className="flex gap-2 w-full">
-          <button onClick={() => loadWords(Number(wordSetId))}
+          <button onClick={loadWords}
             className="flex-1 py-3.5 bg-card border border-slate-700 rounded-2xl text-sm font-medium text-slate-300 shadow-sm hover:shadow-md hover:bg-slate-800/50 transition-all">
             다시 하기
           </button>
@@ -185,7 +144,6 @@ function FlashcardContent() {
           className="relative w-full transition-transform duration-400"
           style={{ transformStyle: "preserve-3d", transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
         >
-          {/* 앞면 — 한국어 뜻 */}
           <div
             className="w-full bg-card border border-slate-700/50 rounded-3xl flex flex-col items-center justify-center min-h-60 px-8 py-10 select-none shadow-sm"
             style={{ backfaceVisibility: "hidden" }}
@@ -194,7 +152,6 @@ function FlashcardContent() {
             <p className="text-2xl font-bold text-foreground text-center leading-snug">{word.definition}</p>
             <p className="text-xs text-slate-500 mt-6">탭하거나 Space로 영단어 확인</p>
           </div>
-          {/* 뒷면 — 영단어 */}
           <div
             className="w-full bg-primary rounded-3xl flex flex-col items-center justify-center min-h-60 px-8 py-10 select-none shadow-sm absolute top-0 left-0"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
@@ -206,11 +163,7 @@ function FlashcardContent() {
       </div>
 
       {/* O / X 버튼 */}
-      <div
-        className={`transition-all duration-200 ${flipped && animState === "idle"
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-2 pointer-events-none"}`}
-      >
+      <div className={`transition-all duration-200 ${flipped && animState === "idle" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
         <div className="flex gap-3">
           <button onClick={() => goNext(false)}
             className="flex-1 py-4 bg-card border border-slate-700/50 rounded-2xl shadow-sm text-wrong font-bold text-lg hover:shadow-md hover:bg-slate-800/50 active:scale-95 transition-all duration-100 flex items-center justify-center gap-1.5">
@@ -260,17 +213,5 @@ function FlashcardContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function FlashcardPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
-      <FlashcardContent />
-    </Suspense>
   );
 }
