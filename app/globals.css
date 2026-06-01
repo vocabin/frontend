@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "pretendard/dist/web/static/pretendard.css";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 
 @theme inline {
   --color-background: #0a0f1e;
