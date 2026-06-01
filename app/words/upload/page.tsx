@@ -109,8 +109,8 @@ export default function UploadPage() {
           </div>
           <p className="text-xs text-slate-500 mt-2">
             {uploadType === "quizlet"
-              ? "퀴즐렛에서 내보낸 .txt / .tsv 파일을 올려주세요"
-              : "앱 제공 CSV 템플릿 형식의 파일을 올려주세요"}
+              ? "퀴즐렛에서 내보낸 .csv / .xlsx / .xls / .pdf 파일을 올려주세요"
+              : "앱 제공 CSV 템플릿 형식의 파일을 올려주세요 (english,korean 헤더 포함)"}
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export default function UploadPage() {
           <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-primary hover:bg-slate-800 transition-all">
             <input
               type="file"
-              accept=".txt,.tsv,.csv"
+              accept={uploadType === "quizlet" ? ".csv,.xlsx,.xls,.pdf" : ".csv"}
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="hidden"
             />
@@ -137,7 +137,9 @@ export default function UploadPage() {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 <p className="text-sm text-slate-500">클릭하여 파일 선택</p>
-                <p className="text-xs text-slate-600 mt-0.5">.txt, .tsv, .csv</p>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  {uploadType === "quizlet" ? ".csv, .xlsx, .xls, .pdf" : ".csv"}
+                </p>
               </div>
             )}
           </label>
