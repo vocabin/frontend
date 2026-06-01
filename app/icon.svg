@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#151522" />
+  
+  <!-- Back Card -->
+  <rect x="80" y="148" width="256" height="186" fill="#2a3875" />
+  
+  <!-- Middle Card -->
+  <rect x="119" y="176" width="256" height="186" fill="#2f4bb6" />
+  
+  <!-- Front Card -->
+  <rect x="158" y="206" width="256" height="188" fill="#ffffff" />
+  
+  <!-- "Aa" Text -->
+  <g fill="#181822">
+    <!-- Big A -->
+    <!-- Left Leg -->
+    <rect x="220" y="255" width="10" height="60" />
+    <!-- Right Leg -->
+    <rect x="250" y="255" width="10" height="60" />
+    <!-- Top Bar -->
+    <rect x="220" y="255" width="40" height="10" />
+    <!-- Middle Bar -->
+    <rect x="220" y="280" width="40" height="10" />
+
+    <!-- Small a -->
+    <!-- Top Bar -->
+    <rect x="275" y="275" width="30" height="10" />
+    <!-- Middle Bar -->
+    <rect x="275" y="290" width="30" height="10" />
+    <!-- Bottom Bar -->
+    <rect x="275" y="305" width="30" height="10" />
+    <!-- Right Leg -->
+    <rect x="295" y="275" width="10" height="40" />
+    <!-- Left Leg -->
+    <rect x="275" y="290" width="10" height="25" />
+
+    <!-- Underline -->
+    <rect x="190" y="340" width="140" height="6" />
+  </g>
+</svg>

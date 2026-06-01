@@ -44,17 +44,17 @@ export default function HomePage() {
 
       {/* 통계 요약 카드 */}
       {summary && (
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-card rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary tabular-nums">{summary.totalWords}</p>
+        <div className="grid grid-cols-3 gap-3 mb-8 stagger">
+          <div className="bg-card rounded-2xl p-4 text-center card-lift">
+            <p className="text-2xl font-bold text-primary tabular-nums num-pop">{summary.totalWords}</p>
             <p className="text-xs text-slate-400 mt-1">전체 단어</p>
           </div>
-          <div className="bg-card rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary tabular-nums">{Math.round(summary.correctRate * 100)}%</p>
+          <div className="bg-card rounded-2xl p-4 text-center card-lift">
+            <p className="text-2xl font-bold text-primary tabular-nums num-pop">{Math.round(summary.correctRate * 100)}%</p>
             <p className="text-xs text-slate-400 mt-1">전체 정답률</p>
           </div>
-          <div className="bg-card rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-foreground tabular-nums">{summary.streakDays}</p>
+          <div className="bg-card rounded-2xl p-4 text-center card-lift">
+            <p className="text-2xl font-bold text-foreground tabular-nums num-pop">{summary.streakDays}</p>
             <p className="text-xs text-slate-400 mt-1">연속 학습일</p>
           </div>
         </div>
@@ -62,11 +62,11 @@ export default function HomePage() {
 
       {/* 전체 학습 모드 */}
       <div className="grid grid-cols-2 gap-3 mb-8">
-        <Link href="/study/flashcard" className="bg-card rounded-2xl p-5 hover:bg-slate-800/70 transition-colors">
+        <Link href="/study/flashcard" className="bg-card rounded-2xl p-5 card-lift">
           <p className="text-sm font-semibold text-foreground mb-1">플래시카드</p>
           <p className="text-xs text-slate-400">전체 단어 SM-2 복습</p>
         </Link>
-        <Link href="/study/speedrun" className="bg-card rounded-2xl p-5 hover:bg-slate-800/70 transition-colors">
+        <Link href="/study/speedrun" className="bg-card rounded-2xl p-5 card-lift">
           <p className="text-sm font-semibold text-foreground mb-1">스피드런</p>
           <p className="text-xs text-slate-400">60초 타임어택</p>
         </Link>
@@ -80,11 +80,11 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 stagger">
         {progress.map((set) => {
           const pct = set.totalWords > 0 ? Math.round((set.studiedWords / set.totalWords) * 100) : 0;
           return (
-            <div key={set.wordSetId} className="bg-card rounded-2xl p-5">
+            <div key={set.wordSetId} className="bg-card rounded-2xl p-5 card-lift">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-foreground text-sm">{set.name}</h3>
