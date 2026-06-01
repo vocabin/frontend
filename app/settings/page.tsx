@@ -25,12 +25,12 @@ export default function SettingsPage() {
         setNickname(m.data.nickname);
         setSettings(s.data);
         setDailyGoal(s.data.dailyGoal);
-        setRandomOrder(s.data.randomOrder);
+        setRandomOrder(s.data.shuffle);
       })
       .catch(() => {
-        setMember({ nickname: "홍길동", email: "user@example.com" });
+        setMember({ id: 0, nickname: "홍길동", email: "user@example.com" });
         setNickname("홍길동");
-        setSettings({ dailyGoal: 20, randomOrder: false });
+        setSettings({ dailyGoal: 20, shuffle: false });
         setDailyGoal(20);
         setRandomOrder(false);
       })
@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
   const handleSettings = async () => {
     try {
-      await settingsApi.update({ dailyGoal, randomOrder });
+      await settingsApi.update({ dailyGoal, shuffle: randomOrder });
       flash("success", "설정이 저장되었어요");
     } catch {
       flash("error", "설정 저장에 실패했어요");

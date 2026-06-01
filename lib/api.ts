@@ -5,61 +5,60 @@ import api from "./axios";
 export interface WordSet {
   id: number;
   name: string;
-  wordCount: number;
-  learnedCount: number;
-  correctRate: number;
+  createdAt: string;
 }
 
 export interface Word {
   id: number;
-  term: string;
-  definition: string;
+  english: string;
+  korean: string;
   wordSetId: number;
-  weakCount: number;
 }
 
 export interface StatsSummary {
-  todayReviewCount: number;
-  weeklyCorrectRate: number;
-  streakDays: number;
   totalWords: number;
-  totalSessions: number;
-  totalCorrectRate: number;
-  weakWordCount: number;
+  correctRate: number; // 0.0 ~ 1.0
+  streakDays: number;
+  totalRecords: number;
 }
 
-export interface WeeklyStats {
-  day: string;
+export interface WeeklyDay {
+  date: string;
+  total: number;
+  correct: number;
   correctRate: number;
 }
 
-export interface CalendarEntry {
-  date: string;
-  sessionCount: number;
+export interface WeeklyStats {
+  days: WeeklyDay[];
+}
+
+export interface CalendarStats {
+  studiedDates: string[];
 }
 
 export interface WordSetProgress {
   wordSetId: number;
-  wordSetName: string;
+  name: string;
   totalWords: number;
-  learnedWords: number;
-  correctRate: number;
+  studiedWords: number;
 }
 
 export interface StudyRecord {
   wordId: number;
   correct: boolean;
-  mode: "FLASHCARD" | "SPEEDRUN";
+  mode: "FLASHCARD" | "SPEEDRUN" | "WEAK";
 }
 
 export interface Member {
+  id: number;
   nickname: string;
   email: string;
 }
 
 export interface Settings {
   dailyGoal: number;
-  randomOrder: boolean;
+  shuffle: boolean;
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -115,8 +114,8 @@ export const wordsApi = {
       params: wordSetId ? { wordSetId } : undefined,
     }),
 
-  update: (wordId: number, term: string, definition: string) =>
-    api.put<Word>(`/api/words/${wordId}`, { term, definition }),
+  update: (wordId: number, english: string, korean: string) =>
+    api.put<Word>(`/api/words/${wordId}`, { english, korean }),
 
   delete: (wordId: number) => api.delete(`/api/words/${wordId}`),
 };
@@ -133,10 +132,10 @@ export const studyApi = {
 export const statsApi = {
   getSummary: () => api.get<StatsSummary>("/api/stats/summary"),
 
-  getWeekly: () => api.get<WeeklyStats[]>("/api/stats/weekly"),
+  getWeekly: () => api.get<WeeklyStats>("/api/stats/weekly"),
 
   getCalendar: (year: number, month: number) =>
-    api.get<CalendarEntry[]>("/api/stats/calendar", {
+    api.get<CalendarStats>("/api/stats/calendar", {
       params: { year, month },
     }),
 };

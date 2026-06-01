@@ -33,8 +33,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="text-center mb-10">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
-            <span className="text-white text-2xl font-bold">V</span>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-lg shadow-primary/20">
+            <img src="/icon.svg" alt="Vocabin Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">회원가입</h1>
           <p className="text-sm text-slate-400 mt-1">Vocabin과 함께 영단어를 정복해봐요</p>

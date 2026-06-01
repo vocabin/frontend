@@ -10,24 +10,24 @@ export default function WordsPage() {
   const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
-  const [editTerm, setEditTerm] = useState("");
-  const [editDef, setEditDef] = useState("");
+  const [editEnglish, setEditEnglish] = useState("");
+  const [editKorean, setEditKorean] = useState("");
 
   const DUMMY_SETS: WordSet[] = [
-    { id: 1, name: "Week 1 — 기초 어휘", wordCount: 4, learnedCount: 3, correctRate: 80 },
-    { id: 2, name: "Week 2 — 중급 어휘", wordCount: 3, learnedCount: 1, correctRate: 62 },
+    { id: 1, name: "Week 1 — 기초 어휘", createdAt: "" },
+    { id: 2, name: "Week 2 — 중급 어휘", createdAt: "" },
   ];
   const DUMMY_WORDS: Record<number, Word[]> = {
     1: [
-      { id: 1, term: "abandon", definition: "포기하다, 버리다", wordSetId: 1, weakCount: 0 },
-      { id: 2, term: "abstract", definition: "추상적인; 요약하다", wordSetId: 1, weakCount: 1 },
-      { id: 3, term: "accelerate", definition: "가속하다", wordSetId: 1, weakCount: 0 },
-      { id: 4, term: "accumulate", definition: "축적하다", wordSetId: 1, weakCount: 3 },
+      { id: 1, english: "abandon", korean: "포기하다, 버리다", wordSetId: 1 },
+      { id: 2, english: "abstract", korean: "추상적인; 요약하다", wordSetId: 1 },
+      { id: 3, english: "accelerate", korean: "가속하다", wordSetId: 1 },
+      { id: 4, english: "accumulate", korean: "축적하다", wordSetId: 1 },
     ],
     2: [
-      { id: 5, term: "benevolent", definition: "자애로운, 친절한", wordSetId: 2, weakCount: 2 },
-      { id: 6, term: "brevity", definition: "간결함", wordSetId: 2, weakCount: 0 },
-      { id: 7, term: "callous", definition: "냉담한, 무정한", wordSetId: 2, weakCount: 4 },
+      { id: 5, english: "benevolent", korean: "자애로운, 친절한", wordSetId: 2 },
+      { id: 6, english: "brevity", korean: "간결함", wordSetId: 2 },
+      { id: 7, english: "callous", korean: "냉담한, 무정한", wordSetId: 2 },
     ],
   };
 
@@ -62,15 +62,15 @@ export default function WordsPage() {
 
   const handleEdit = (word: Word) => {
     setEditingWord(word);
-    setEditTerm(word.term);
-    setEditDef(word.definition);
+    setEditEnglish(word.english);
+    setEditKorean(word.korean);
   };
 
   const handleEditSave = async () => {
     if (!editingWord) return;
-    try { await wordsApi.update(editingWord.id, editTerm, editDef); } catch { /* 더미 모드 */ }
+    try { await wordsApi.update(editingWord.id, editEnglish, editKorean); } catch { /* 더미 모드 */ }
     setWords((prev) =>
-      prev.map((w) => w.id === editingWord.id ? { ...w, term: editTerm, definition: editDef } : w)
+      prev.map((w) => w.id === editingWord.id ? { ...w, english: editEnglish, korean: editKorean } : w)
     );
     setEditingWord(null);
   };
@@ -128,11 +128,8 @@ export default function WordsPage() {
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-[11px] text-slate-700 tabular-nums w-5 shrink-0 text-right">{i + 1}</span>
               <div className="min-w-0">
-                <span className="font-mono text-sm text-foreground tracking-tight">{word.term}</span>
-                {word.weakCount >= 3 && (
-                  <span className="ml-2 text-[10px] text-wrong/70 font-medium">취약</span>
-                )}
-                <p className="text-xs text-slate-500 mt-0.5 truncate">{word.definition}</p>
+                <span className="font-mono text-sm text-foreground tracking-tight">{word.english}</span>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">{word.korean}</p>
               </div>
             </div>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
@@ -179,16 +176,16 @@ export default function WordsPage() {
               <div>
                 <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5 block">영단어</label>
                 <input
-                  value={editTerm}
-                  onChange={(e) => setEditTerm(e.target.value)}
+                  value={editEnglish}
+                  onChange={(e) => setEditEnglish(e.target.value)}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50 transition-colors placeholder:text-slate-600"
                 />
               </div>
               <div>
                 <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5 block">뜻</label>
                 <input
-                  value={editDef}
-                  onChange={(e) => setEditDef(e.target.value)}
+                  value={editKorean}
+                  onChange={(e) => setEditKorean(e.target.value)}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-colors placeholder:text-slate-600"
                 />
               </div>

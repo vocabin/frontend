@@ -19,8 +19,8 @@ export default function UploadPage() {
       .then((res) => setWordSets(res.data))
       .catch(() =>
         setWordSets([
-          { id: 1, name: "Week 1 — 기초 어휘", wordCount: 40, learnedCount: 32, correctRate: 80 },
-          { id: 2, name: "Week 2 — 중급 어휘", wordCount: 50, learnedCount: 18, correctRate: 62 },
+          { id: 1, name: "Week 1 — 기초 어휘", createdAt: "" },
+          { id: 2, name: "Week 2 — 중급 어휘", createdAt: "" },
         ])
       );
   }, []);

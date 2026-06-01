@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { statsApi, wordSetsApi, StatsSummary, WeeklyStats, CalendarEntry, WordSetProgress } from "@/lib/api";
+import { statsApi, wordSetsApi, StatsSummary, WeeklyDay, WordSetProgress } from "@/lib/api";
 
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export default function StatsPage() {
   const [summary, setSummary] = useState<StatsSummary | null>(null);
-  const [weekly, setWeekly] = useState<WeeklyStats[]>([]);
-  const [calendar, setCalendar] = useState<CalendarEntry[]>([]);
+  const [weekly, setWeekly] = useState<WeeklyDay[]>([]);
+  const [studiedDates, setStudiedDates] = useState<Set<string>>(new Set());
   const [progress, setProgress] = useState<WordSetProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,35 +23,36 @@ export default function StatsPage() {
     ])
       .then(([s, w, c, p]) => {
         setSummary(s.data);
-        setWeekly(w.data);
-        setCalendar(c.data);
+        setWeekly(w.data.days ?? []);
+        setStudiedDates(new Set(c.data.studiedDates ?? []));
         setProgress(p.data);
       })
       .catch(() => {
-        setSummary({ todayReviewCount: 24, weeklyCorrectRate: 71, streakDays: 5, totalWords: 135, totalSessions: 18, totalCorrectRate: 68, weakWordCount: 8 });
-        setWeekly([
-          { day: "월", correctRate: 60 },
-          { day: "화", correctRate: 75 },
-          { day: "수", correctRate: 55 },
-          { day: "목", correctRate: 88 },
-          { day: "금", correctRate: 72 },
-          { day: "토", correctRate: 90 },
-          { day: "일", correctRate: 65 },
-        ]);
-        const entries: CalendarEntry[] = [];
+        setSummary({ totalWords: 135, correctRate: 0.71, streakDays: 5, totalRecords: 18 });
+        const dummyDays: WeeklyDay[] = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(now);
+          d.setDate(now.getDate() - 6 + i);
+          return {
+            date: d.toISOString().slice(0, 10),
+            total: Math.floor(Math.random() * 20) + 5,
+            correct: Math.floor(Math.random() * 15) + 3,
+            correctRate: 0.5 + Math.random() * 0.4,
+          };
+        });
+        setWeekly(dummyDays);
+        const dates: string[] = [];
         for (let d = 1; d <= now.getDate(); d++) {
           if (Math.random() > 0.4) {
-            entries.push({
-              date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
-              sessionCount: Math.floor(Math.random() * 4) + 1,
-            });
+            dates.push(
+              `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`
+            );
           }
         }
-        setCalendar(entries);
+        setStudiedDates(new Set(dates));
         setProgress([
-          { wordSetId: 1, wordSetName: "Week 1 — 기초 어휘", totalWords: 40, learnedWords: 32, correctRate: 80 },
-          { wordSetId: 2, wordSetName: "Week 2 — 중급 어휘", totalWords: 50, learnedWords: 18, correctRate: 62 },
-          { wordSetId: 3, wordSetName: "Week 3 — 고급 어휘", totalWords: 45, learnedWords: 5, correctRate: 40 },
+          { wordSetId: 1, name: "Week 1 — 기초 어휘", totalWords: 40, studiedWords: 32 },
+          { wordSetId: 2, name: "Week 2 — 중급 어휘", totalWords: 50, studiedWords: 18 },
+          { wordSetId: 3, name: "Week 3 — 고급 어휘", totalWords: 45, studiedWords: 5 },
         ]);
       })
       .finally(() => setLoading(false));
@@ -59,16 +60,13 @@ export default function StatsPage() {
 
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const firstDayOfWeek = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-  const calendarMap = new Map(calendar.map((c) => [c.date.split("-")[2], c.sessionCount]));
-  const maxRate = weekly.length > 0 ? Math.max(...weekly.map((w) => w.correctRate)) : 100;
 
-  const getHeatStyle = (count: number | undefined): string => {
-    if (!count) return "bg-white/[0.04]";
-    if (count === 1) return "bg-primary/25";
-    if (count === 2) return "bg-primary/45";
-    if (count === 3) return "bg-primary/65";
-    return "bg-primary";
-  };
+  const weeklyWithLabel = weekly.map((w) => ({
+    ...w,
+    dayLabel: DAYS[new Date(w.date).getDay()],
+  }));
+  const maxRate = weeklyWithLabel.length > 0 ? Math.max(...weeklyWithLabel.map((w) => w.correctRate)) : 1;
+  const todayDateStr = now.toISOString().slice(0, 10);
 
   if (loading) {
     return (
@@ -88,7 +86,7 @@ export default function StatsPage() {
         </p>
       </div>
 
-      {/* 요약 — 상단 2개 큰 카드 + 하단 2개 */}
+      {/* 요약 카드 */}
       {summary && (
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-card border border-white/[0.05] rounded-xl p-4">
@@ -98,55 +96,64 @@ export default function StatsPage() {
           </div>
           <div className="bg-card border border-white/[0.05] rounded-xl p-4">
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-2">전체 정답률</p>
-            <p className="text-3xl font-bold text-primary tabular-nums">{summary.totalCorrectRate}</p>
+            <p className="text-3xl font-bold text-primary tabular-nums">{Math.round(summary.correctRate * 100)}</p>
             <p className="text-[11px] text-slate-600 mt-1">%</p>
           </div>
           <div className="bg-card border border-white/[0.05] rounded-xl p-3.5">
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">연속 학습</p>
-            <p className="text-xl font-bold text-foreground tabular-nums">{summary.streakDays}<span className="text-sm font-normal text-slate-500 ml-1">일</span></p>
+            <p className="text-xl font-bold text-foreground tabular-nums">
+              {summary.streakDays}
+              <span className="text-sm font-normal text-slate-500 ml-1">일</span>
+            </p>
           </div>
           <div className="bg-card border border-white/[0.05] rounded-xl p-3.5">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">총 세션</p>
-            <p className="text-xl font-bold text-foreground tabular-nums">{summary.totalSessions}<span className="text-sm font-normal text-slate-500 ml-1">회</span></p>
+            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">총 학습 기록</p>
+            <p className="text-xl font-bold text-foreground tabular-nums">
+              {summary.totalRecords}
+              <span className="text-sm font-normal text-slate-500 ml-1">회</span>
+            </p>
           </div>
         </div>
       )}
 
       {/* 주간 정답률 */}
-      <div className="bg-card border border-white/[0.05] rounded-xl p-5">
-        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-5">이번 주 정답률</p>
-        <div className="flex items-end gap-1.5" style={{ height: "80px" }}>
-          {weekly.map((w, i) => {
-            const heightPct = maxRate > 0 ? (w.correctRate / maxRate) * 100 : 0;
-            const isToday = DAYS[now.getDay()] === w.day;
-            return (
-              <div key={w.day} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full flex flex-col justify-end" style={{ height: "60px" }}>
-                  <div
-                    className={`w-full rounded-sm bar-fill ${isToday ? "bg-primary" : "bg-primary/35"}`}
-                    style={{
-                      height: `${heightPct}%`,
-                      animationDelay: `${i * 50}ms`,
-                      minHeight: heightPct > 0 ? "3px" : "0",
-                    }}
-                  />
+      {weeklyWithLabel.length > 0 && (
+        <div className="bg-card border border-white/[0.05] rounded-xl p-5">
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-5">이번 주 정답률</p>
+          <div className="flex items-end gap-1.5" style={{ height: "80px" }}>
+            {weeklyWithLabel.map((w, i) => {
+              const heightPct = maxRate > 0 ? (w.correctRate / maxRate) * 100 : 0;
+              const isToday = w.date === todayDateStr;
+              return (
+                <div key={w.date} className="flex-1 flex flex-col items-center gap-1.5">
+                  <div className="w-full flex flex-col justify-end" style={{ height: "60px" }}>
+                    <div
+                      className={`w-full rounded-sm bar-fill ${isToday ? "bg-primary" : "bg-primary/35"}`}
+                      style={{
+                        height: `${heightPct}%`,
+                        animationDelay: `${i * 50}ms`,
+                        minHeight: heightPct > 0 ? "3px" : "0",
+                      }}
+                    />
+                  </div>
+                  <span className={`text-[10px] font-medium ${isToday ? "text-primary" : "text-slate-600"}`}>
+                    {w.dayLabel}
+                  </span>
                 </div>
-                <span className={`text-[10px] font-medium ${isToday ? "text-primary" : "text-slate-600"}`}>
-                  {w.day}
+              );
+            })}
+          </div>
+          <div className="flex gap-1.5 mt-3 border-t border-white/[0.04] pt-3">
+            {weeklyWithLabel.map((w) => (
+              <div key={w.date} className="flex-1 text-center">
+                <span className="text-[10px] tabular-nums text-slate-500">
+                  {Math.round(w.correctRate * 100)}%
                 </span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-        {/* 정답률 레이블 */}
-        <div className="flex gap-1.5 mt-3 border-t border-white/[0.04] pt-3">
-          {weekly.map((w) => (
-            <div key={w.day} className="flex-1 text-center">
-              <span className="text-[10px] tabular-nums text-slate-500">{w.correctRate}%</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* 학습 히트맵 */}
       <div className="bg-card border border-white/[0.05] rounded-xl p-5">
@@ -164,26 +171,26 @@ export default function StatsPage() {
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const dayStr = String(i + 1).padStart(2, "0");
-            const count = calendarMap.get(dayStr);
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${dayStr}`;
+            const studied = studiedDates.has(dateStr);
             const isFuture = i + 1 > now.getDate();
             const isToday = i + 1 === now.getDate();
             return (
               <div
                 key={dayStr}
-                title={count ? `${i + 1}일: ${count}세션` : `${i + 1}일`}
-                className={`aspect-square rounded-sm transition-colors relative ${
-                  isFuture ? "bg-white/[0.02]" : getHeatStyle(count)
+                title={`${i + 1}일${studied ? " ✓" : ""}`}
+                className={`aspect-square rounded-sm transition-colors ${
+                  isFuture ? "bg-white/[0.02]" : studied ? "bg-primary/60" : "bg-white/[0.04]"
                 } ${isToday ? "ring-1 ring-primary/50" : ""}`}
               />
             );
           })}
         </div>
         <div className="flex items-center gap-1 mt-3 justify-end">
-          <span className="text-[10px] text-slate-700 mr-0.5">적음</span>
-          {["bg-white/[0.04]", "bg-primary/25", "bg-primary/45", "bg-primary/65", "bg-primary"].map((c, i) => (
-            <div key={i} className={`w-2.5 h-2.5 rounded-sm ${c}`} />
-          ))}
-          <span className="text-[10px] text-slate-700 ml-0.5">많음</span>
+          <span className="text-[10px] text-slate-700 mr-0.5">미학습</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-white/[0.04]" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-primary/60" />
+          <span className="text-[10px] text-slate-700 ml-0.5">학습</span>
         </div>
       </div>
 
@@ -193,13 +200,13 @@ export default function StatsPage() {
           <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-4">세트별 진행률</p>
           <div className="space-y-5">
             {progress.map((p) => {
-              const pct = p.totalWords > 0 ? Math.round((p.learnedWords / p.totalWords) * 100) : 0;
+              const pct = p.totalWords > 0 ? Math.round((p.studiedWords / p.totalWords) * 100) : 0;
               return (
                 <div key={p.wordSetId}>
                   <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-sm text-foreground">{p.wordSetName}</span>
+                    <span className="text-sm text-foreground">{p.name}</span>
                     <div className="flex items-baseline gap-2 tabular-nums">
-                      <span className="text-[11px] text-slate-600">{p.learnedWords}/{p.totalWords}</span>
+                      <span className="text-[11px] text-slate-600">{p.studiedWords}/{p.totalWords}</span>
                       <span className="text-sm font-semibold text-primary">{pct}%</span>
                     </div>
                   </div>

@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { wordsApi, studyApi, Word } from "@/lib/api";
 
 const DUMMY_WORDS: Word[] = [
-  { id: 1, term: "abandon", definition: "포기하다, 버리다", wordSetId: 1, weakCount: 0 },
-  { id: 2, term: "abstract", definition: "추상적인; 요약하다", wordSetId: 1, weakCount: 1 },
-  { id: 3, term: "accelerate", definition: "가속하다", wordSetId: 1, weakCount: 0 },
-  { id: 4, term: "accumulate", definition: "축적하다", wordSetId: 1, weakCount: 3 },
-  { id: 5, term: "benevolent", definition: "자애로운, 친절한", wordSetId: 1, weakCount: 2 },
+  { id: 1, english: "abandon", korean: "포기하다, 버리다", wordSetId: 1 },
+  { id: 2, english: "abstract", korean: "추상적인; 요약하다", wordSetId: 1 },
+  { id: 3, english: "accelerate", korean: "가속하다", wordSetId: 1 },
+  { id: 4, english: "accumulate", korean: "축적하다", wordSetId: 1 },
+  { id: 5, english: "benevolent", korean: "자애로운, 친절한", wordSetId: 1 },
 ];
 
 export default function SpeedrunPage() {
@@ -71,7 +71,7 @@ export default function SpeedrunPage() {
     e.preventDefault();
     if (feedback !== null) return;
     const word = words[index];
-    const isCorrect = word.term.trim().toLowerCase() === input.trim().toLowerCase();
+    const isCorrect = word.english.trim().toLowerCase() === input.trim().toLowerCase();
     setFeedback(isCorrect ? "correct" : "wrong");
     next(isCorrect);
   };
@@ -134,9 +134,9 @@ export default function SpeedrunPage() {
       {/* 단어 카드 */}
       <div className={`rounded-3xl border-2 p-8 mb-6 text-center transition-all duration-300 ${bgClass}`}>
         <p className="text-xs font-medium text-slate-500 mb-3 uppercase tracking-widest">한국어 뜻</p>
-        <p className="text-2xl font-bold text-foreground leading-snug">{currentWord.definition}</p>
-        {feedback === "wrong" && <p className="mt-4 text-sm text-wrong font-medium">정답: {currentWord.term}</p>}
-        {feedback === "correct" && <p className="mt-4 text-sm text-correct font-medium">정답! {currentWord.term}</p>}
+        <p className="text-2xl font-bold text-foreground leading-snug">{currentWord.korean}</p>
+        {feedback === "wrong" && <p className="mt-4 text-sm text-wrong font-medium">정답: {currentWord.english}</p>}
+        {feedback === "correct" && <p className="mt-4 text-sm text-correct font-medium">정답! {currentWord.english}</p>}
       </div>
 
       {/* 입력 폼 */}

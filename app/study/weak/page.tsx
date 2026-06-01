@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { wordsApi, wordSetsApi, Word, WordSet } from "@/lib/api";
 
 const DUMMY_WEAK: Word[] = [
-  { id: 4, term: "accumulate", definition: "축적하다", wordSetId: 1, weakCount: 3 },
-  { id: 7, term: "callous", definition: "냉담한, 무정한", wordSetId: 2, weakCount: 4 },
-  { id: 5, term: "benevolent", definition: "자애로운, 친절한", wordSetId: 2, weakCount: 2 },
+  { id: 4, english: "accumulate", korean: "축적하다", wordSetId: 1 },
+  { id: 7, english: "callous", korean: "냉담한, 무정한", wordSetId: 2 },
+  { id: 5, english: "benevolent", korean: "자애로운, 친절한", wordSetId: 2 },
 ];
 
 function WeakContent() {
@@ -23,8 +23,8 @@ function WeakContent() {
     wordSetsApi.getAll()
       .then((res) => setWordSets(res.data))
       .catch(() => setWordSets([
-        { id: 1, name: "Week 1", wordCount: 40, learnedCount: 32, correctRate: 80 },
-        { id: 2, name: "Week 2", wordCount: 50, learnedCount: 18, correctRate: 62 },
+        { id: 1, name: "Week 1", createdAt: "" },
+        { id: 2, name: "Week 2", createdAt: "" },
       ]));
   }, []);
 
@@ -97,20 +97,8 @@ function WeakContent() {
             >
               <span className="text-[11px] text-slate-700 tabular-nums w-5 shrink-0 text-right">{i + 1}</span>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm text-foreground">{word.term}</span>
-                  <span className="text-[10px] text-wrong/60 font-medium tabular-nums">×{word.weakCount}</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">{word.definition}</p>
-              </div>
-              {/* 오답 강도 바 */}
-              <div className="flex gap-0.5 shrink-0">
-                {Array.from({ length: 4 }).map((_, j) => (
-                  <div
-                    key={j}
-                    className={`w-1 h-3 rounded-full ${j < word.weakCount ? "bg-wrong/60" : "bg-white/[0.06]"}`}
-                  />
-                ))}
+                <span className="font-mono text-sm text-foreground">{word.english}</span>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">{word.korean}</p>
               </div>
             </div>
           ))}

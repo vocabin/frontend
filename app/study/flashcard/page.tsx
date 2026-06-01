@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { wordsApi, studyApi, Word } from "@/lib/api";
 
 const DUMMY_WORDS: Word[] = [
-  { id: 1, term: "abandon",    definition: "포기하다, 버리다",    wordSetId: 1, weakCount: 0 },
-  { id: 2, term: "abstract",   definition: "추상적인; 요약하다",  wordSetId: 1, weakCount: 1 },
-  { id: 3, term: "accelerate", definition: "가속하다",            wordSetId: 1, weakCount: 0 },
-  { id: 4, term: "accumulate", definition: "축적하다",            wordSetId: 1, weakCount: 3 },
-  { id: 5, term: "benevolent", definition: "자애로운, 친절한",    wordSetId: 1, weakCount: 2 },
+  { id: 1, english: "abandon",    korean: "포기하다, 버리다",    wordSetId: 1 },
+  { id: 2, english: "abstract",   korean: "추상적인; 요약하다",  wordSetId: 1 },
+  { id: 3, english: "accelerate", korean: "가속하다",            wordSetId: 1 },
+  { id: 4, english: "accumulate", korean: "축적하다",            wordSetId: 1 },
+  { id: 5, english: "benevolent", korean: "자애로운, 친절한",    wordSetId: 1 },
 ];
 
 type AnimState = "idle" | "exit" | "enter";
@@ -25,8 +25,8 @@ export default function FlashcardPage() {
   const [results, setResults]     = useState({ correct: 0, wrong: 0 });
   const [animState, setAnimState] = useState<AnimState>("idle");
   const [editingWord, setEditingWord] = useState<Word | null>(null);
-  const [editTerm, setEditTerm]   = useState("");
-  const [editDef, setEditDef]     = useState("");
+  const [editEnglish, setEditEnglish] = useState("");
+  const [editKorean, setEditKorean]   = useState("");
 
   const loadWords = useCallback(() => {
     setLoading(true);
@@ -69,8 +69,8 @@ export default function FlashcardPage() {
 
   const handleEditSave = async () => {
     if (!editingWord) return;
-    wordsApi.update(editingWord.id, editTerm, editDef).catch(() => {});
-    setWords((p) => p.map((w) => w.id === editingWord.id ? { ...w, term: editTerm, definition: editDef } : w));
+    wordsApi.update(editingWord.id, editEnglish, editKorean).catch(() => {});
+    setWords((p) => p.map((w) => w.id === editingWord.id ? { ...w, english: editEnglish, korean: editKorean } : w));
     setEditingWord(null);
   };
 
@@ -124,7 +124,7 @@ export default function FlashcardPage() {
         </div>
         <span className="text-xs text-slate-500 shrink-0 tabular-nums">{index + 1}/{words.length}</span>
         <button
-          onClick={() => { setEditingWord(word); setEditTerm(word.term); setEditDef(word.definition); }}
+          onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
           className="text-slate-600 hover:text-primary transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -149,7 +149,7 @@ export default function FlashcardPage() {
             style={{ backfaceVisibility: "hidden" }}
           >
             <p className="text-[11px] font-semibold text-slate-500 mb-5 uppercase tracking-widest">한국어 뜻</p>
-            <p className="text-2xl font-bold text-foreground text-center leading-snug">{word.definition}</p>
+            <p className="text-2xl font-bold text-foreground text-center leading-snug">{word.korean}</p>
             <p className="text-xs text-slate-500 mt-6">탭하거나 Space로 영단어 확인</p>
           </div>
           <div
@@ -157,7 +157,7 @@ export default function FlashcardPage() {
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
             <p className="text-[11px] font-semibold text-blue-200 mb-5 uppercase tracking-widest">영단어</p>
-            <p className="text-3xl font-bold text-white text-center">{word.term}</p>
+            <p className="text-3xl font-bold text-white text-center">{word.english}</p>
           </div>
         </div>
       </div>
@@ -194,12 +194,12 @@ export default function FlashcardPage() {
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-slate-500 mb-1 block">영단어</label>
-                <input value={editTerm} onChange={(e) => setEditTerm(e.target.value)}
+                <input value={editEnglish} onChange={(e) => setEditEnglish(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
               </div>
               <div>
                 <label className="text-xs text-slate-500 mb-1 block">뜻</label>
-                <input value={editDef} onChange={(e) => setEditDef(e.target.value)}
+                <input value={editKorean} onChange={(e) => setEditKorean(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
               </div>
             </div>
