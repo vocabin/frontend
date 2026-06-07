@@ -10,6 +10,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const failsafe = setTimeout(() => setLoading(false), 8000);
+
     Promise.all([wordSetsApi.getProgress(), statsApi.getSummary()])
       .then(([progressRes, summaryRes]) => {
         setProgress(progressRes.data);
@@ -23,7 +25,12 @@ export default function HomePage() {
         ]);
         setSummary({ totalWords: 135, correctRate: 0.71, streakDays: 5, totalRecords: 18 });
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(failsafe);
+        setLoading(false);
+      });
+
+    return () => clearTimeout(failsafe);
   }, []);
 
   if (loading) {
