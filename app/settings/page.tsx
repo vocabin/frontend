@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { membersApi, settingsApi, authApi, Member, Settings } from "@/lib/api";
+import { membersApi, settingsApi, authApi, autoImportApi, Member, Settings, AutoImportConfig, ImportHistory } from "@/lib/api";
 import { clearAccessToken } from "@/lib/auth";
+
+const AUTO_IMPORT_EMAIL = "aksdn1285@gmail.com";
+
+const DOW_LABELS = ["", "월", "화", "수", "목", "금", "토", "일"];
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -18,6 +22,11 @@ export default function SettingsPage() {
   const [randomOrder, setRandomOrder] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Auto-import (aksdn1285@gmail.com only)
+  const [autoImportConfig, setAutoImportConfig] = useState<AutoImportConfig | null>(null);
+  const [importHistory, setImportHistory] = useState<ImportHistory[]>([]);
+  const [importing, setImporting] = useState(false);
+
   useEffect(() => {
     Promise.all([membersApi.getMe(), settingsApi.get()])
       .then(([m, s]) => {
@@ -26,6 +35,14 @@ export default function SettingsPage() {
         setSettings(s.data);
         setDailyGoal(s.data.dailyGoal);
         setRandomOrder(s.data.shuffle);
+        if (m.data.email === AUTO_IMPORT_EMAIL) {
+          Promise.all([autoImportApi.getConfig(), autoImportApi.getHistory()])
+            .then(([cfg, hist]) => {
+              setAutoImportConfig(cfg.data);
+              setImportHistory(hist.data);
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {
         setMember({ id: 0, nickname: "홍길동", email: "user@example.com" });
@@ -75,6 +92,31 @@ export default function SettingsPage() {
     try { await authApi.logout(); } catch { /* noop */ }
     clearAccessToken();
     router.push("/login");
+  };
+
+  const handleAutoImportSave = async () => {
+    if (!autoImportConfig) return;
+    try {
+      const res = await autoImportApi.updateConfig(autoImportConfig);
+      setAutoImportConfig(res.data);
+      flash("success", "자동 임포트 설정이 저장되었어요");
+    } catch {
+      flash("error", "설정 저장에 실패했어요");
+    }
+  };
+
+  const handleTrigger = async () => {
+    setImporting(true);
+    try {
+      const res = await autoImportApi.trigger();
+      const hist = await autoImportApi.getHistory();
+      setImportHistory(hist.data);
+      flash("success", `${res.data.imported}개 클래스를 가져왔어요`);
+    } catch {
+      flash("error", "임포트에 실패했어요");
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -193,6 +235,86 @@ export default function SettingsPage() {
           저장
         </button>
       </div>
+
+      {/* 자동 임포트 (aksdn1285@gmail.com 전용) */}
+      {member?.email === AUTO_IMPORT_EMAIL && autoImportConfig && (
+        <div className="bg-card rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">퀴즐렛 자동 임포트</h2>
+              <p className="text-xs text-slate-500 mt-0.5">fluent 수업 단어를 자동으로 가져와요</p>
+            </div>
+            <button
+              onClick={() => setAutoImportConfig({ ...autoImportConfig, enabled: !autoImportConfig.enabled })}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${autoImportConfig.enabled ? "bg-primary" : "bg-slate-700"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${autoImportConfig.enabled ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-300">요일</p>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setAutoImportConfig({ ...autoImportConfig, dayOfWeek: d })}
+                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${autoImportConfig.dayOfWeek === d ? "bg-primary text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}
+                >
+                  {DOW_LABELS[d]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-300">시간</p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.max(0, autoImportConfig.hour - 1) })}
+                className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors"
+              >−</button>
+              <span className="text-sm font-bold text-primary w-12 text-center tabular-nums">
+                {String(autoImportConfig.hour).padStart(2, "0")}:00
+              </span>
+              <button
+                onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.min(23, autoImportConfig.hour + 1) })}
+                className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors"
+              >+</button>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleAutoImportSave}
+              className="flex-1 py-2.5 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors"
+            >
+              저장
+            </button>
+            <button
+              onClick={handleTrigger}
+              disabled={importing}
+              className="flex-1 py-2.5 bg-slate-700 text-slate-200 text-sm font-medium rounded-xl hover:bg-slate-600 transition-colors disabled:opacity-50"
+            >
+              {importing ? "가져오는 중…" : "지금 가져오기"}
+            </button>
+          </div>
+
+          {importHistory.length > 0 && (
+            <div className="pt-2 border-t border-slate-700/50">
+              <p className="text-xs text-slate-500 mb-2">임포트 이력</p>
+              <div className="space-y-1 max-h-36 overflow-y-auto scrollbar-hide">
+                {importHistory.slice(0, 10).map((h) => (
+                  <div key={h.externalClassId} className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 truncate max-w-[60%]">{h.externalClassId}</span>
+                    <span className="text-slate-600 shrink-0">{h.importedAt.slice(0, 10)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 로그아웃 / 탈퇴 */}
       <div className="space-y-2">
