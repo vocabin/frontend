@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { wordsApi, studyApi, Word } from "@/lib/api";
+import { wordsApi, studyApi, settingsApi, Word } from "@/lib/api";
 
 const DUMMY_WORDS: Word[] = [
   { id: 1, english: "abandon",    korean: "포기하다, 버리다",    wordSetId: 1 },
@@ -32,8 +32,11 @@ export default function FlashcardPage() {
     setLoading(true);
     setIndex(0); setFlipped(false); setFinished(false);
     setResults({ correct: 0, wrong: 0 }); setAnimState("idle");
-    wordsApi.getDue()
-      .then((r) => setWords(r.data))
+    Promise.all([wordsApi.getDue(), settingsApi.get()])
+      .then(([wordsRes, settingsRes]) => {
+        const limit = settingsRes.data.dailyGoal ?? 20;
+        setWords(wordsRes.data.slice(0, limit));
+      })
       .catch(() => setWords(DUMMY_WORDS))
       .finally(() => setLoading(false));
   }, []);

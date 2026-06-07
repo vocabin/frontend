@@ -97,6 +97,14 @@ export const wordSetsApi = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  uploadHackers: (wordSetId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/api/word-sets/${wordSetId}/upload/hackers`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };
 
 // ─── Words ────────────────────────────────────────────────────────────────────
@@ -160,4 +168,29 @@ export const settingsApi = {
   get: () => api.get<Settings>("/api/settings"),
 
   update: (settings: Settings) => api.put("/api/settings", settings),
+};
+
+// ─── Auto Import ──────────────────────────────────────────────────────────────
+
+export interface AutoImportConfig {
+  dayOfWeek: number; // 1=Mon, 7=Sun
+  hour: number;      // 0-23
+  enabled: boolean;
+}
+
+export interface ImportHistory {
+  externalClassId: string;
+  wordSetId: number;
+  importedAt: string;
+}
+
+export const autoImportApi = {
+  getConfig: () => api.get<AutoImportConfig>("/api/auto-import/config"),
+
+  updateConfig: (config: AutoImportConfig) =>
+    api.put<AutoImportConfig>("/api/auto-import/config", config),
+
+  trigger: () => api.post<{ imported: number }>("/api/auto-import/trigger"),
+
+  getHistory: () => api.get<ImportHistory[]>("/api/auto-import/history"),
 };
