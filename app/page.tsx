@@ -8,14 +8,19 @@ export default function HomePage() {
   const [progress, setProgress] = useState<WordSetProgress[]>([]);
   const [summary, setSummary] = useState<StatsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugError, setDebugError] = useState<string>("");
 
   useEffect(() => {
+    const failsafe = setTimeout(() => setLoading(false), 8000);
+
     Promise.all([wordSetsApi.getProgress(), statsApi.getSummary()])
       .then(([progressRes, summaryRes]) => {
         setProgress(progressRes.data);
         setSummary(summaryRes.data);
       })
-      .catch(() => {
+      .catch((err) => {
+        const msg = err?.code ?? err?.response?.status ?? err?.message ?? "unknown";
+        setDebugError(`ERR: ${msg} | status: ${err?.response?.status} | url: ${err?.config?.url}`);
         setProgress([
           { wordSetId: 1, name: "Week 1 — 기초 어휘", totalWords: 40, studiedWords: 32 },
           { wordSetId: 2, name: "Week 2 — 중급 어휘", totalWords: 50, studiedWords: 18 },
@@ -23,7 +28,12 @@ export default function HomePage() {
         ]);
         setSummary({ totalWords: 135, correctRate: 0.71, streakDays: 5, totalRecords: 18 });
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(failsafe);
+        setLoading(false);
+      });
+
+    return () => clearTimeout(failsafe);
   }, []);
 
   if (loading) {
@@ -36,6 +46,11 @@ export default function HomePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      {/* 디버그 에러 (임시) */}
+      {debugError && (
+        <div className="mb-4 p-3 bg-red-900/50 rounded-xl text-xs text-red-300 break-all">{debugError}</div>
+      )}
+
       {/* 헤더 */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">안녕하세요 👋</h1>
