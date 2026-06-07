@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Refresh Token 쿠키 존재 여부로 인증 확인
-  const hasRefreshToken = request.cookies.has("refreshToken");
+  const hasRefreshToken = request.cookies.has("refresh_token");
   if (!hasRefreshToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
