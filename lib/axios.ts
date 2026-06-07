@@ -6,6 +6,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // Refresh Token 쿠키 자동 전송
+  timeout: 10000,
 });
 
 // ─── Request Interceptor ─────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ api.interceptors.response.use(
         const response = await axios.post<{ accessToken: string }>(
           `${BASE_URL}/api/auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: true, timeout: 10000 }
         );
         const newToken = response.data.accessToken;
         setAccessToken(newToken);
