@@ -86,12 +86,12 @@ export default function HomePage() {
           return (
             <div key={set.wordSetId} className="bg-card rounded-2xl p-5 card-lift">
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-foreground text-sm">{set.name}</h3>
+                <Link href={`/words/${set.wordSetId}`} className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-sm hover:text-primary transition-colors">{set.name}</h3>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {set.studiedWords} / {set.totalWords}단어 학습
                   </p>
-                </div>
+                </Link>
                 <span className="text-sm font-bold text-primary tabular-nums">{pct}%</span>
               </div>
 
@@ -103,13 +103,21 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* 취약 단어 버튼 */}
-              <Link
-                href={`/study/weak?wordSetId=${set.wordSetId}`}
-                className="block text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
-              >
-                취약 단어
-              </Link>
+              {/* 버튼 */}
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href={`/words/${set.wordSetId}`}
+                  className="block text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                >
+                  단어 목록
+                </Link>
+                <Link
+                  href={`/study/weak?wordSetId=${set.wordSetId}`}
+                  className="block text-center py-2 bg-slate-700/50 border border-slate-600 text-slate-300 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                >
+                  취약 단어
+                </Link>
+              </div>
             </div>
           );
         })}
