@@ -97,6 +97,14 @@ export const wordSetsApi = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  uploadHackers: (wordSetId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/api/word-sets/${wordSetId}/upload/hackers`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };
 
 // ─── Words ────────────────────────────────────────────────────────────────────
