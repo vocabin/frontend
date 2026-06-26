@@ -23,7 +23,7 @@ function IconZap() {
 
 function IconChevronRight() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="9 18 15 12 9 6" />
     </svg>
   );
@@ -60,13 +60,12 @@ export default function HomePage() {
 
         {/* ── 왼쪽: 헤더 + 통계 + 학습 모드 ────────────────────── */}
         <div>
-          {/* 헤더 */}
           <div className="mb-8">
             <h1 className="text-[22px] font-bold text-foreground leading-tight">안녕하세요 👋</h1>
             <p className="text-slate-500 text-sm mt-1.5">오늘도 꾸준히 학습해봐요</p>
           </div>
 
-          {/* 통계 — 수평 한 줄 */}
+          {/* 통계 수평 한 줄 */}
           {summary && (
             <div className="flex items-stretch bg-card border border-white/[0.06] rounded-2xl overflow-hidden mb-8">
               <div className="flex-1 py-5 text-center">
@@ -89,10 +88,7 @@ export default function HomePage() {
           {/* 학습 모드 */}
           <p className="text-xs font-semibold text-slate-500 mb-3">학습 모드</p>
           <div className="space-y-2 mb-10 md:mb-0">
-            <Link
-              href="/study/flashcard"
-              className="flex items-center gap-4 bg-card border border-white/[0.06] rounded-2xl px-4 py-4 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all group"
-            >
+            <Link href="/study/flashcard" className="flex items-center gap-4 bg-card border border-white/[0.06] rounded-2xl px-4 py-4 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all group">
               <div className="w-10 h-10 rounded-xl bg-blue-500/[0.12] flex items-center justify-center text-blue-400 shrink-0">
                 <IconCards />
               </div>
@@ -100,15 +96,10 @@ export default function HomePage() {
                 <p className="text-sm font-semibold text-foreground">플래시카드</p>
                 <p className="text-xs text-slate-500 mt-0.5">SM-2 알고리즘 복습</p>
               </div>
-              <span className="text-slate-600 group-hover:text-slate-400 transition-colors">
-                <IconChevronRight />
-              </span>
+              <span className="text-slate-600 group-hover:text-slate-400 transition-colors"><IconChevronRight /></span>
             </Link>
 
-            <Link
-              href="/study/speedrun"
-              className="flex items-center gap-4 bg-card border border-white/[0.06] rounded-2xl px-4 py-4 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all group"
-            >
+            <Link href="/study/speedrun" className="flex items-center gap-4 bg-card border border-white/[0.06] rounded-2xl px-4 py-4 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all group">
               <div className="w-10 h-10 rounded-xl bg-orange-500/[0.12] flex items-center justify-center text-orange-400 shrink-0">
                 <IconZap />
               </div>
@@ -116,83 +107,83 @@ export default function HomePage() {
                 <p className="text-sm font-semibold text-foreground">스피드런</p>
                 <p className="text-xs text-slate-500 mt-0.5">60초 타임어택</p>
               </div>
-              <span className="text-slate-600 group-hover:text-slate-400 transition-colors">
-                <IconChevronRight />
-              </span>
+              <span className="text-slate-600 group-hover:text-slate-400 transition-colors"><IconChevronRight /></span>
             </Link>
           </div>
         </div>
 
-        {/* ── 오른쪽: 단어 세트 ──────────────────────────────── */}
+        {/* ── 오른쪽: 단어 세트 리스트 ──────────────────────────── */}
         <div>
-          <div className="flex items-center justify-between mb-4 mt-0 md:mt-0">
-            <p className="text-xs font-semibold text-slate-500">
-              단어 세트 <span className="text-slate-400">{progress.length}개</span>
-            </p>
-            <Link
-              href="/words/upload"
-              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              새 세트
-            </Link>
-          </div>
-
           {progress.length === 0 ? (
-            <div className="text-center py-20 bg-card border border-white/[0.06] rounded-2xl">
+            <div className="text-center py-20 bg-card border border-white/[0.06] rounded-2xl mt-8 md:mt-0">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-700 mx-auto mb-4">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
               </svg>
               <p className="text-sm font-medium text-slate-400">아직 단어 세트가 없어요</p>
               <p className="text-xs text-slate-600 mt-1 mb-5">CSV 파일을 업로드해서 시작해봐요</p>
-              <Link
-                href="/words/upload"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors"
-              >
+              <Link href="/words/upload" className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-hover transition-colors">
                 첫 번째 세트 만들기
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 stagger">
-              {progress.map((set) => {
-                const pct = set.totalWords > 0 ? Math.round((set.studiedWords / set.totalWords) * 100) : 0;
-                return (
-                  <div key={set.wordSetId} className="bg-card border border-white/[0.06] rounded-2xl p-5 flex flex-col gap-4">
-                    <Link href={`/words/${set.wordSetId}`} className="block">
-                      <h3 className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">{set.name}</h3>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs text-slate-500">{set.studiedWords} / {set.totalWords}단어</p>
-                        <span className="text-xs font-bold text-primary tabular-nums">{pct}%</span>
+            <div className="bg-card border border-white/[0.06] rounded-2xl overflow-hidden mt-8 md:mt-0">
+              {/* 헤더 */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.05]">
+                <p className="text-xs font-semibold text-slate-500">
+                  단어 세트 <span className="text-slate-300 font-bold">{progress.length}</span>개
+                </p>
+                <Link href="/words/upload" className="flex items-center gap-1 text-xs font-medium text-primary hover:opacity-80 transition-opacity">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  새 세트
+                </Link>
+              </div>
+
+              {/* 리스트 */}
+              <div className="divide-y divide-white/[0.04]">
+                {progress.map((set) => {
+                  const pct = set.totalWords > 0 ? Math.round((set.studiedWords / set.totalWords) * 100) : 0;
+                  return (
+                    <Link
+                      key={set.wordSetId}
+                      href={`/words/${set.wordSetId}`}
+                      className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition-colors group"
+                    >
+                      {/* 이름 + 단어 수 */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                          {set.name}
+                        </p>
+                        <p className="text-xs text-slate-600 mt-0.5">
+                          {set.studiedWords} / {set.totalWords}단어
+                        </p>
                       </div>
+
+                      {/* 진행률 */}
+                      <div className="w-28 shrink-0 hidden sm:block">
+                        <div className="h-1 bg-white/[0.07] rounded-full">
+                          <div
+                            className="h-1 bg-primary rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* % */}
+                      <span className="text-xs font-bold text-primary tabular-nums w-8 text-right shrink-0">
+                        {pct}%
+                      </span>
+
+                      {/* 화살표 */}
+                      <span className="text-slate-700 group-hover:text-slate-400 transition-colors shrink-0">
+                        <IconChevronRight />
+                      </span>
                     </Link>
-
-                    <div className="h-1 bg-white/[0.07] rounded-full">
-                      <div
-                        className="h-1 bg-primary rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link
-                        href={`/words/${set.wordSetId}`}
-                        className="text-center py-2.5 text-xs font-medium text-slate-400 bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-colors active:scale-95"
-                      >
-                        단어 목록
-                      </Link>
-                      <Link
-                        href={`/study/weak?wordSetId=${set.wordSetId}`}
-                        className="text-center py-2.5 text-xs font-medium text-slate-400 bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-colors active:scale-95"
-                      >
-                        취약 단어
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
