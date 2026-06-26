@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #0a0f1e;
-  --color-foreground: #f1f5f9;
-  --color-card:       #0f1629;
+  --color-background: #111114;
+  --color-foreground: #F5F5F7;
+  --color-card:       #1C1C1F;
 
   --color-primary:       #3B82F6;
   --color-primary-hover: #2563EB;
@@ -16,8 +16,6 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
 }
