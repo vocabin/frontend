@@ -1,16 +1,16 @@
-@import "tailwindcss";
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import "tailwindcss";
 
 @theme inline {
   --color-background: #0a0f1e;
   --color-foreground: #f1f5f9;
   --color-card:       #0f1629;
 
-  --color-primary:       #3182F6;
-  --color-primary-hover: #2070E8;
+  --color-primary:       #3B82F6;
+  --color-primary-hover: #2563EB;
 
-  --color-correct: #4ade80;
-  --color-wrong:   #f87171;
+  --color-correct: #34C759;
+  --color-wrong:   #FF453A;
 }
 
 body {
@@ -18,10 +18,14 @@ body {
   color: var(--color-foreground);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   background-image:
-    radial-gradient(ellipse 70% 40% at 15% 0%, rgba(49, 130, 246, 0.08) 0%, transparent 60%),
-    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.022) 1px, transparent 0);
-  background-size: 100% 100%, 28px 28px;
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+/* ── iOS Safe Area ───────────────────────────────────────────────────────── */
+.pb-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── 페이지 전환 ─────────────────────────────────────────────────────────── */

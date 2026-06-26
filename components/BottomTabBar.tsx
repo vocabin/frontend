@@ -73,7 +73,7 @@ export default function BottomTabBar() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-white/[0.05] z-40">
-      <div ref={containerRef} className="flex relative">
+      <div ref={containerRef} className="flex relative" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         {/* 슬라이딩 상단 바 인디케이터 */}
         <div
           className="absolute top-0 h-0.5 bg-primary rounded-full pointer-events-none"
