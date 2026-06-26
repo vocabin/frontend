@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
+import { setAccessToken } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,7 +21,9 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await authApi.register(nickname, email, password);
-      router.push("/login");
+      const loginRes = await authApi.login(email, password);
+      setAccessToken(loginRes.data.accessToken);
+      router.push("/");
     } catch {
       setError("회원가입에 실패했어요. 이미 사용 중인 이메일일 수 있어요");
     } finally {
