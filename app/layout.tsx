@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -19,6 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+        />
+      </head>
       <body className="min-h-full antialiased bg-background text-foreground">
         <ClientLayout>{children}</ClientLayout>
       </body>
