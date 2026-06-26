@@ -93,7 +93,17 @@ export default function SpeedrunPage() {
     const rate = total > 0 ? Math.round((results.correct / total) * 100) : 0;
     return (
       <div className="max-w-lg mx-auto px-4 py-8 flex flex-col items-center text-center">
-        <div className="text-5xl mb-4">{results.correct >= 15 ? "🔥" : "💪"}</div>
+        <div className="w-20 h-20 rounded-full bg-card shadow-sm flex items-center justify-center mb-4">
+          {results.correct >= 15 ? (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-orange-400">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+            </svg>
+          ) : (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          )}
+        </div>
         <h2 className="text-2xl font-bold text-foreground mb-1">타임 아웃!</h2>
         <p className="text-slate-400 text-sm mb-8">60초 동안 {total}개의 단어를 풀었어요</p>
         <div className="flex gap-6 mb-8">
@@ -117,7 +127,11 @@ export default function SpeedrunPage() {
       {/* 타이머 및 점수 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 bg-slate-800 px-4 py-2.5 rounded-xl shrink-0">
-          <span className="text-base font-bold text-primary">⏱ {timeLeft}초</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={timeLeft <= 10 ? "text-wrong" : "text-primary"}>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span className={`text-base font-bold tabular-nums ${timeLeft <= 10 ? "text-wrong" : "text-primary"}`}>{timeLeft}초</span>
         </div>
         <div className="flex items-center gap-5">
           <div className="text-center">

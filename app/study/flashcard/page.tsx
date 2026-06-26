@@ -88,8 +88,17 @@ export default function FlashcardPage() {
     const rate  = total > 0 ? Math.round((results.correct / total) * 100) : 0;
     return (
       <div className="max-w-lg mx-auto px-4 py-8 flex flex-col items-center text-center">
-        <div className="w-20 h-20 rounded-full bg-card shadow-sm flex items-center justify-center text-4xl mb-5">
-          {rate >= 70 ? "🎉" : "💪"}
+        <div className="w-20 h-20 rounded-full bg-card shadow-sm flex items-center justify-center mb-5">
+          {rate >= 70 ? (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-correct">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="9 12 11 14 15 10" />
+            </svg>
+          ) : (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          )}
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-1">학습 완료!</h2>
         <p className="text-slate-400 text-sm mb-8">{total}개 단어 완료</p>
