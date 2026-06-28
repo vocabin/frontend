@@ -97,29 +97,29 @@ export default function HomePage() {
       {/* 통계 요약 카드 */}
       {summary && (
         <div className="grid grid-cols-3 gap-4 mb-10 stagger">
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-white/10 group">
-            <div className="absolute -right-3 -bottom-3 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-primary/20 group">
+            <div className="absolute -right-3 -bottom-3 text-foreground opacity-[0.05] group-hover:scale-110 transition-transform duration-300">
               <IconBook />
             </div>
             <div className="text-blue-400 mb-3"><IconBook /></div>
             <p className="text-2xl font-bold text-foreground tabular-nums num-pop tracking-tight">{summary.totalWords}</p>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">전체 단어</p>
+            <p className="text-xs text-muted mt-1 font-semibold">전체 단어</p>
           </div>
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-white/10 group">
-            <div className="absolute -right-3 -bottom-3 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-primary/20 group">
+            <div className="absolute -right-3 -bottom-3 text-foreground opacity-[0.05] group-hover:scale-110 transition-transform duration-300">
               <IconCheck />
             </div>
             <div className="text-correct mb-3"><IconCheck /></div>
             <p className="text-2xl font-bold text-foreground tabular-nums num-pop tracking-tight">{Math.round(summary.correctRate * 100)}%</p>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">전체 정답률</p>
+            <p className="text-xs text-muted mt-1 font-semibold">전체 정답률</p>
           </div>
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-white/10 group">
-            <div className="absolute -right-3 -bottom-3 text-slate-800/10 group-hover:scale-110 transition-transform duration-300">
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:border-primary/20 group">
+            <div className="absolute -right-3 -bottom-3 text-foreground opacity-[0.05] group-hover:scale-110 transition-transform duration-300">
               <IconFlame />
             </div>
             <div className="text-orange-400 mb-3"><IconFlame /></div>
             <p className="text-2xl font-bold text-foreground tabular-nums num-pop tracking-tight">{summary.streakDays}일</p>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">연속 학습일</p>
+            <p className="text-xs text-muted mt-1 font-semibold">연속 학습일</p>
           </div>
         </div>
       )}
@@ -128,7 +128,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         <Link 
           href="/study/flashcard" 
-          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-950/10 group spring-active"
+          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-primary/30 hover:bg-primary/[0.02] group spring-active"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 transition-colors duration-300 group-hover:bg-blue-500/20">
@@ -139,7 +139,7 @@ export default function HomePage() {
                 플래시카드
                 <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full font-medium">SM-2 복습</span>
               </p>
-              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              <p className="text-xs text-muted mt-1.5 leading-relaxed">
                 망각 곡선 주기에 맞춰 최적의 단어들만 복습합니다.
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function HomePage() {
         </Link>
         <Link 
           href="/study/speedrun" 
-          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/30 hover:bg-orange-950/10 group spring-active"
+          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/30 hover:bg-orange-500/[0.02] group spring-active"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 transition-colors duration-300 group-hover:bg-orange-500/20">
@@ -158,7 +158,7 @@ export default function HomePage() {
                 스피드런
                 <span className="text-[10px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full font-medium">Time Attack</span>
               </p>
-              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              <p className="text-xs text-muted mt-1.5 leading-relaxed">
                 60초 동안 빠르고 격렬하게 단어 스펠링을 맞춰보세요.
               </p>
             </div>
@@ -178,11 +178,11 @@ export default function HomePage() {
         {progress.map((set) => {
           const pct = set.totalWords > 0 ? Math.round((set.studiedWords / set.totalWords) * 100) : 0;
           return (
-            <div key={set.wordSetId} className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-white/10">
+            <div key={set.wordSetId} className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-primary/20">
               <div className="flex items-start justify-between mb-4">
                 <Link href={`/words/${set.wordSetId}`} className="flex-1 min-w-0 group">
                   <h3 className="font-bold text-foreground text-[15px] group-hover:text-primary transition-colors truncate tracking-tight">{set.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">
+                  <p className="text-xs text-muted mt-1 font-semibold">
                     총 {set.totalWords}단어 중 {set.studiedWords}개 학습 완료
                   </p>
                 </Link>
@@ -190,7 +190,7 @@ export default function HomePage() {
               </div>
 
               {/* 프로그레스 바 */}
-              <div className="h-2 bg-white/[0.04] rounded-full mb-5 overflow-hidden">
+              <div className="h-2 bg-border rounded-full mb-5 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
                   style={{ width: `${pct}%` }}
@@ -201,13 +201,13 @@ export default function HomePage() {
               <div className="grid grid-cols-2 gap-3">
                 <Link
                   href={`/words/${set.wordSetId}`}
-                  className="block text-center py-3 bg-white/[0.03] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.06] text-slate-200 text-xs font-semibold rounded-xl spring-active transition-all"
+                  className="block text-center py-3 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
                 >
                   단어 목록
                 </Link>
                 <Link
                   href={`/study/weak?wordSetId=${set.wordSetId}`}
-                  className="block text-center py-3 bg-white/[0.03] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.06] text-slate-200 text-xs font-semibold rounded-xl spring-active transition-all"
+                  className="block text-center py-3 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
                 >
                   취약 단어
                 </Link>

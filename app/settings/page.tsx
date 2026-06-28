@@ -190,17 +190,17 @@ export default function SettingsPage() {
           <h2 className="text-sm font-bold text-foreground tracking-tight">계정 정보</h2>
           {member && <p className="text-xs text-slate-400 mt-1 font-medium">{member.email}</p>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임"
-            className="flex-1 bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
+            className="flex-1 bg-background border border-border text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium placeholder:text-sub"
           />
           <button
             onClick={handleNickname}
             disabled={nicknameBtn === "loading"}
-            className={`px-5 py-3 text-sm font-bold rounded-xl transition-all duration-200 shrink-0 spring-active ${
+            className={`px-6 py-3 text-sm font-bold rounded-xl transition-all duration-200 sm:shrink-0 spring-active ${
               nicknameBtn === "success" ? "bg-correct text-white" :
               nicknameBtn === "error"   ? "bg-wrong text-white" :
               "bg-primary text-white hover:bg-primary-hover"
@@ -220,14 +220,14 @@ export default function SettingsPage() {
             value={currentPw}
             onChange={(e) => setCurrentPw(e.target.value)}
             placeholder="현재 비밀번호"
-            className="w-full bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
+            className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium placeholder:text-sub"
           />
           <input
             type="password"
             value={newPw}
             onChange={(e) => setNewPw(e.target.value)}
             placeholder="새 비밀번호"
-            className="w-full bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
+            className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium placeholder:text-sub"
           />
         </div>
         {pwError && <p className="text-xs text-wrong font-semibold">⚠️ {pwError}</p>}
@@ -238,27 +238,27 @@ export default function SettingsPage() {
       <section className="glass-card rounded-2xl p-6 space-y-5">
         <h2 className="text-sm font-bold text-foreground tracking-tight">학습 설정</h2>
         
-        <div className="flex items-center justify-between border-b border-white/[0.04] pb-4">
+        <div className="flex items-center justify-between border-b border-border pb-4">
           <div>
-            <p className="text-sm font-semibold text-slate-200">하루 목표 단어 수</p>
+            <p className="text-sm font-semibold text-foreground">하루 목표 단어 수</p>
             <p className="text-xs text-slate-500 mt-1 font-medium">플래시카드 학습 시 하루에 표시될 단어 개수</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDailyGoal((v) => Math.max(5, v - 5))}
-              className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all spring-active font-bold"
+              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
             >−</button>
             <span className="text-sm font-extrabold text-primary w-8 text-center tabular-nums">{dailyGoal}</span>
             <button
               onClick={() => setDailyGoal((v) => Math.min(100, v + 5))}
-              className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all spring-active font-bold"
+              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
             >+</button>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-slate-200">랜덤 순서 활성화</p>
+            <p className="text-sm font-semibold text-foreground">랜덤 순서 활성화</p>
             <p className="text-xs text-slate-500 mt-1 font-medium">단어 목록을 학습할 때 무작위 순서로 노출합니다</p>
           </div>
           <button
@@ -277,7 +277,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-bold text-foreground tracking-tight">화면 테마 설정</h2>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-slate-200">라이트 모드 적용</p>
+            <p className="text-sm font-semibold text-foreground">라이트 모드 적용</p>
             <p className="text-xs text-slate-500 mt-1 font-medium">화면 테마를 어두운 색상에서 밝은 색상으로 전환합니다</p>
           </div>
           <button
@@ -307,16 +307,16 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-200">연동 요일</p>
+            <p className="text-sm font-semibold text-foreground">연동 요일</p>
             <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
               {[1,2,3,4,5,6,7].map((d) => (
                 <button 
                   key={d} 
                   onClick={() => setAutoImportConfig({ ...autoImportConfig, dayOfWeek: d })}
-                  className={`w-9 h-9 rounded-lg text-xs font-bold transition-all shrink-0 spring-active ${
+                  className={`w-9 h-9 rounded-lg text-xs font-bold transition-all shrink-0 spring-active cursor-pointer ${
                     autoImportConfig.dayOfWeek === d 
                       ? "bg-primary text-white shadow-md shadow-primary/10" 
-                      : "bg-white/[0.02] border border-white/[0.08] text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+                      : "bg-card border border-border text-muted hover:bg-primary/[0.03] hover:text-foreground"
                   }`}
                 >
                   {DOW_LABELS[d]}
@@ -326,16 +326,16 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-200">연동 시간</p>
+            <p className="text-sm font-semibold text-foreground">연동 시간</p>
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.max(0, autoImportConfig.hour - 1) })}
-                className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] transition-all spring-active font-bold"
+                className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
               >−</button>
               <span className="text-sm font-extrabold text-primary w-12 text-center tabular-nums">{String(autoImportConfig.hour).padStart(2,"0")}:00</span>
               <button 
                 onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.min(23, autoImportConfig.hour + 1) })}
-                className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] transition-all spring-active font-bold"
+                className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
               >+</button>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function SettingsPage() {
             <button 
               onClick={handleTrigger} 
               disabled={importing}
-              className="flex-1 py-3 bg-white/[0.04] border border-white/[0.06] text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.12] text-sm font-bold rounded-xl transition-all disabled:opacity-50 spring-active flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-card border border-border text-muted hover:text-foreground hover:bg-primary/[0.03] text-sm font-bold rounded-xl transition-all disabled:opacity-50 spring-active flex items-center justify-center gap-2 cursor-pointer"
             >
               {importing ? (
                 <>
@@ -386,10 +386,10 @@ export default function SettingsPage() {
       {savedWordSets.length > 0 && (
         <section className="glass-card rounded-2xl p-6 space-y-4">
           <h2 className="text-sm font-bold text-foreground tracking-tight">구독 중인 단어 세트</h2>
-          <div className="space-y-1 divide-y divide-white/[0.03]">
+          <div className="space-y-1 divide-y divide-border">
             {savedWordSets.map((s) => (
               <div key={s.wordSetId} className="flex items-center justify-between py-3">
-                <Link href={`/words/${s.wordSetId}`} className="text-sm font-semibold text-slate-300 hover:text-primary transition-colors truncate flex-1 tracking-tight">
+                <Link href={`/words/${s.wordSetId}`} className="text-sm font-semibold text-muted hover:text-primary transition-colors truncate flex-1 tracking-tight">
                   {s.name}
                 </Link>
                 <button
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                     await savedWordSetsApi.unsave(s.wordSetId).catch(() => {});
                     setSavedWordSets((prev) => prev.filter((x) => x.wordSetId !== s.wordSetId));
                   }}
-                  className="ml-3 text-slate-500 hover:text-wrong transition-colors shrink-0 p-1 rounded-lg hover:bg-wrong/5 spring-active"
+                  className="ml-3 text-slate-500 hover:text-wrong transition-colors shrink-0 p-1 rounded-lg hover:bg-wrong/5 spring-active cursor-pointer"
                   title="세트 구독 취소"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -414,7 +414,7 @@ export default function SettingsPage() {
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button 
           onClick={handleLogout}
-          className="flex-1 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl text-sm font-bold text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] transition-all spring-active"
+          className="flex-1 py-3 bg-card border border-border rounded-xl text-sm font-bold text-muted hover:text-foreground hover:bg-primary/[0.03] transition-all spring-active cursor-pointer"
         >
           로그아웃
         </button>
