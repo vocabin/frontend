@@ -170,6 +170,43 @@ export const settingsApi = {
   update: (settings: Settings) => api.put("/api/settings", settings),
 };
 
+// ─── Saved Word Sets ──────────────────────────────────────────────────────────
+
+export interface SavedWordSet {
+  wordSetId: number;
+  name: string;
+  savedAt: string;
+}
+
+export const savedWordSetsApi = {
+  getAll: () => api.get<SavedWordSet[]>("/api/word-sets/saved"),
+
+  isSaved: (wordSetId: number) =>
+    api.get<{ saved: boolean }>(`/api/word-sets/${wordSetId}/saved`),
+
+  save: (wordSetId: number) =>
+    api.post<SavedWordSet>(`/api/word-sets/${wordSetId}/save`),
+
+  unsave: (wordSetId: number) =>
+    api.delete(`/api/word-sets/${wordSetId}/save`),
+};
+
+// ─── Study Bookmark ───────────────────────────────────────────────────────────
+
+export interface StudyBookmark {
+  wordSetId: number;
+  wordIndex: number;
+  updatedAt: string;
+}
+
+export const studyBookmarkApi = {
+  get: (wordSetId: number) =>
+    api.get<StudyBookmark>(`/api/word-sets/${wordSetId}/bookmark`),
+
+  upsert: (wordSetId: number, wordIndex: number) =>
+    api.put<StudyBookmark>(`/api/word-sets/${wordSetId}/bookmark`, { wordIndex }),
+};
+
 // ─── Auto Import ──────────────────────────────────────────────────────────────
 
 export interface AutoImportConfig {

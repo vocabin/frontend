@@ -1,82 +1,106 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { wordsApi, studyApi, settingsApi, Word } from "@/lib/api";
-
-const DUMMY_WORDS: Word[] = [
-  { id: 1, english: "abandon",    korean: "포기하다, 버리다",    wordSetId: 1 },
-  { id: 2, english: "abstract",   korean: "추상적인; 요약하다",  wordSetId: 1 },
-  { id: 3, english: "accelerate", korean: "가속하다",            wordSetId: 1 },
-  { id: 4, english: "accumulate", korean: "축적하다",            wordSetId: 1 },
-  { id: 5, english: "benevolent", korean: "자애로운, 친절한",    wordSetId: 1 },
-];
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { wordsApi, studyBookmarkApi, Word } from "@/lib/api";
 
 type AnimState = "idle" | "exit" | "enter";
-type LangMode = "en-ko" | "ko-en";
+type LangMode = "en-ko" | "ko-en"; // front face language
 
-export default function FlashcardPage() {
+export default function SetFlashcardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const wordSetId = Number(searchParams.get("wordSetId"));
 
-  const [words, setWords]         = useState<Word[]>([]);
-  const [index, setIndex]         = useState(0);
-  const [flipped, setFlipped]     = useState(false);
-  const [loading, setLoading]     = useState(true);
-  const [finished, setFinished]   = useState(false);
-  const [results, setResults]     = useState({ correct: 0, wrong: 0 });
+  const [words, setWords] = useState<Word[]>([]);
+  const [index, setIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [finished, setFinished] = useState(false);
+  const [results, setResults] = useState({ correct: 0, wrong: 0 });
   const [animState, setAnimState] = useState<AnimState>("idle");
-  const [langMode, setLangMode]   = useState<LangMode>("en-ko");
-  const [editingWord, setEditingWord] = useState<Word | null>(null);
-  const [editEnglish, setEditEnglish] = useState("");
-  const [editKorean, setEditKorean]   = useState("");
+  const [langMode, setLangMode] = useState<LangMode>("en-ko");
+  const [isRandom, setIsRandom] = useState(false);
+  const originalWords = useRef<Word[]>([]);
 
-  const loadWords = useCallback(() => {
-    setLoading(true);
-    setIndex(0); setFlipped(false); setFinished(false);
-    setResults({ correct: 0, wrong: 0 }); setAnimState("idle");
-    Promise.all([wordsApi.getDue(), settingsApi.get()])
-      .then(([wordsRes, settingsRes]) => {
-        const limit = settingsRes.data.dailyGoal ?? 20;
-        setWords(wordsRes.data.slice(0, limit));
-      })
-      .catch(() => setWords(DUMMY_WORDS))
-      .finally(() => setLoading(false));
-  }, []);
+  // Load words and bookmark
+  useEffect(() => {
+    if (!wordSetId) return;
+    Promise.all([
+      wordsApi.getByWordSet(wordSetId),
+      studyBookmarkApi.get(wordSetId).catch(() => null),
+    ]).then(([wordsRes, bookmarkRes]) => {
+      const loaded = wordsRes.data;
+      originalWords.current = loaded;
+      setWords(loaded);
+      if (bookmarkRes && bookmarkRes.status === 200 && bookmarkRes.data.wordIndex < loaded.length) {
+        setIndex(bookmarkRes.data.wordIndex);
+      }
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, [wordSetId]);
 
-  useEffect(() => { loadWords(); }, [loadWords]);
+  // Save bookmark every time index changes (debounced via ref)
+  const saveBookmark = useCallback((idx: number) => {
+    if (!wordSetId) return;
+    studyBookmarkApi.upsert(wordSetId, idx).catch(() => {});
+  }, [wordSetId]);
 
   const goNext = useCallback(async (correct: boolean) => {
     if (animState !== "idle") return;
-    const word = words[index];
-    studyApi.recordResult({ wordId: word.id, correct, mode: "FLASHCARD" }).catch(() => {});
     setResults((r) => ({ correct: r.correct + (correct ? 1 : 0), wrong: r.wrong + (correct ? 0 : 1) }));
 
     setAnimState("exit");
     setTimeout(() => {
-      if (index + 1 >= words.length) { setFinished(true); setAnimState("idle"); return; }
-      setIndex((i) => i + 1);
+      const nextIndex = index + 1;
+      if (nextIndex >= words.length) {
+        setFinished(true);
+        setAnimState("idle");
+        return;
+      }
+      setIndex(nextIndex);
+      saveBookmark(nextIndex);
       setFlipped(false);
       setAnimState("enter");
       setTimeout(() => setAnimState("idle"), 180);
     }, 140);
-  }, [animState, words, index]);
+  }, [animState, words, index, saveBookmark]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (editingWord) return;
       if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); setFlipped((f) => !f); }
       if (e.key === "ArrowRight" && flipped) goNext(true);
-      if (e.key === "ArrowLeft"  && flipped) goNext(false);
+      if (e.key === "ArrowLeft" && flipped) goNext(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [flipped, editingWord, goNext]);
+  }, [flipped, goNext]);
 
-  const handleEditSave = async () => {
-    if (!editingWord) return;
-    wordsApi.update(editingWord.id, editEnglish, editKorean).catch(() => {});
-    setWords((p) => p.map((w) => w.id === editingWord.id ? { ...w, english: editEnglish, korean: editKorean } : w));
-    setEditingWord(null);
+  const toggleRandom = () => {
+    setIsRandom((prev) => {
+      const next = !prev;
+      if (next) {
+        const shuffled = [...originalWords.current].sort(() => Math.random() - 0.5);
+        setWords(shuffled);
+      } else {
+        setWords([...originalWords.current]);
+      }
+      setIndex(0);
+      setFlipped(false);
+      return next;
+    });
+  };
+
+  const restart = () => {
+    setIndex(0);
+    setFlipped(false);
+    setFinished(false);
+    setResults({ correct: 0, wrong: 0 });
+    setAnimState("idle");
+    if (isRandom) {
+      setWords([...originalWords.current].sort(() => Math.random() - 0.5));
+    } else {
+      setWords([...originalWords.current]);
+    }
   };
 
   if (loading) return (
@@ -87,14 +111,13 @@ export default function FlashcardPage() {
 
   if (finished) {
     const total = results.correct + results.wrong;
-    const rate  = total > 0 ? Math.round((results.correct / total) * 100) : 0;
+    const rate = total > 0 ? Math.round((results.correct / total) * 100) : 0;
     return (
       <div className="max-w-lg mx-auto px-4 py-8 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-full bg-card shadow-sm flex items-center justify-center mb-5">
           {rate >= 70 ? (
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-correct">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="9 12 11 14 15 10" />
+              <circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" />
             </svg>
           ) : (
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -112,13 +135,13 @@ export default function FlashcardPage() {
           <div className="text-center"><p className="text-3xl font-bold text-primary">{rate}%</p><p className="text-xs text-slate-500 mt-1">정답률</p></div>
         </div>
         <div className="flex gap-2 w-full">
-          <button onClick={loadWords}
-            className="flex-1 py-3.5 bg-card border border-slate-700 rounded-2xl text-sm font-medium text-slate-300 shadow-sm hover:shadow-md hover:bg-slate-800/50 transition-all">
+          <button onClick={restart}
+            className="flex-1 py-3.5 bg-card border border-slate-700 rounded-2xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 transition-all">
             다시 하기
           </button>
-          <button onClick={() => router.push("/")}
-            className="flex-1 py-3.5 bg-primary text-white rounded-2xl text-sm font-semibold shadow-sm hover:bg-primary-hover transition-all">
-            홈으로
+          <button onClick={() => router.back()}
+            className="flex-1 py-3.5 bg-primary text-white rounded-2xl text-sm font-semibold hover:bg-primary-hover transition-all">
+            돌아가기
           </button>
         </div>
       </div>
@@ -128,37 +151,48 @@ export default function FlashcardPage() {
   const word = words[index];
   const cardAnimClass = animState === "exit" ? "card-exit" : animState === "enter" ? "card-enter" : "";
 
-  const frontLabel = langMode === "en-ko" ? "한국어 뜻" : "영단어";
-  const frontText  = langMode === "en-ko" ? word.korean  : word.english;
-  const backLabel  = langMode === "en-ko" ? "영단어"     : "한국어 뜻";
-  const backText   = langMode === "en-ko" ? word.english : word.korean;
-  const flipHint   = langMode === "en-ko" ? "탭하거나 Space로 영단어 확인" : "탭하거나 Space로 뜻 확인";
-  const revealLabel = langMode === "en-ko" ? "영단어 보기" : "뜻 보기";
+  const frontLabel = langMode === "en-ko" ? "영단어" : "한국어 뜻";
+  const frontText = langMode === "en-ko" ? word.english : word.korean;
+  const backLabel = langMode === "en-ko" ? "한국어 뜻" : "영단어";
+  const backText = langMode === "en-ko" ? word.korean : word.english;
+  const flipHint = langMode === "en-ko" ? "탭하거나 Space로 뜻 확인" : "탭하거나 Space로 영단어 확인";
+  const revealLabel = langMode === "en-ko" ? "뜻 보기" : "영단어 보기";
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
-      {/* 진행률 바 */}
+      {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
+        <button onClick={() => router.back()} className="text-slate-500 hover:text-slate-300 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* 진행률 바 */}
         <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
           <div className="h-1 bg-primary rounded-full transition-all duration-500"
             style={{ width: `${(index / words.length) * 100}%` }} />
         </div>
         <span className="text-xs text-slate-500 shrink-0 tabular-nums">{index + 1}/{words.length}</span>
+
+        {/* 랜덤 토글 */}
+        <button
+          onClick={toggleRandom}
+          className={`p-1.5 rounded-lg transition-colors ${isRandom ? "text-primary bg-primary/10" : "text-slate-600 hover:text-slate-400"}`}
+          title={isRandom ? "순서대로" : "랜덤 순서"}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="16 3 21 3 21 8" /><line x1="4" y1="20" x2="21" y2="3" />
+            <polyline points="21 16 21 21 16 21" /><line x1="15" y1="15" x2="21" y2="21" />
+          </svg>
+        </button>
+
         {/* 언어 토글 */}
         <button
           onClick={() => { setLangMode((m) => m === "en-ko" ? "ko-en" : "en-ko"); setFlipped(false); }}
           className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
         >
           {langMode === "en-ko" ? "EN→KO" : "KO→EN"}
-        </button>
-        <button
-          onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
-          className="text-slate-600 hover:text-primary transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
         </button>
       </div>
 
@@ -172,6 +206,7 @@ export default function FlashcardPage() {
           className="relative w-full transition-transform duration-400"
           style={{ transformStyle: "preserve-3d", transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
         >
+          {/* 앞면 */}
           <div
             className="w-full bg-card border border-slate-700/50 rounded-3xl flex flex-col items-center justify-center min-h-60 px-8 py-10 select-none shadow-sm"
             style={{ backfaceVisibility: "hidden" }}
@@ -180,6 +215,7 @@ export default function FlashcardPage() {
             <p className="text-2xl font-bold text-foreground text-center leading-snug">{frontText}</p>
             <p className="text-xs text-slate-500 mt-6">{flipHint}</p>
           </div>
+          {/* 뒷면 */}
           <div
             className="w-full bg-primary rounded-3xl flex flex-col items-center justify-center min-h-60 px-8 py-10 select-none shadow-sm absolute top-0 left-0"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
@@ -212,33 +248,6 @@ export default function FlashcardPage() {
           className="w-full py-4 bg-card border border-slate-700/50 rounded-2xl shadow-sm text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-all">
           {revealLabel}
         </button>
-      )}
-
-      {/* 수정 모달 */}
-      {editingWord && (
-        <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
-          <div className="bg-card rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="font-bold text-foreground mb-4">단어 수정</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-500 mb-1 block">영단어</label>
-                <input value={editEnglish} onChange={(e) => setEditEnglish(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
-              </div>
-              <div>
-                <label className="text-xs text-slate-500 mb-1 block">뜻</label>
-                <input value={editKorean} onChange={(e) => setEditKorean(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary" />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-5">
-              <button onClick={() => setEditingWord(null)}
-                className="flex-1 py-3 border border-slate-700 rounded-xl text-sm text-slate-400 hover:bg-slate-800/50">취소</button>
-              <button onClick={handleEditSave}
-                className="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-semibold">저장</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

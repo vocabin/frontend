@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { wordsApi, wordSetsApi, Word, WordSet } from "@/lib/api";
+import { wordsApi, wordSetsApi, savedWordSetsApi, Word, WordSet } from "@/lib/api";
 
 export default function WordSetDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +13,8 @@ export default function WordSetDetailPage() {
   const [wordSet, setWordSet] = useState<WordSet | null>(null);
   const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean] = useState("");
@@ -21,10 +23,12 @@ export default function WordSetDetailPage() {
     Promise.all([
       wordSetsApi.getAll(),
       wordsApi.getByWordSet(wordSetId),
-    ]).then(([setsRes, wordsRes]) => {
+      savedWordSetsApi.isSaved(wordSetId).catch(() => ({ data: { saved: false } })),
+    ]).then(([setsRes, wordsRes, savedRes]) => {
       const found = setsRes.data.find((s) => s.id === wordSetId) ?? null;
       setWordSet(found);
       setWords(wordsRes.data);
+      setIsSaved(savedRes.data.saved);
     }).catch(() => {
       setWordSet({ id: wordSetId, name: `세트 ${wordSetId}`, createdAt: "" });
       setWords([]);
@@ -37,6 +41,20 @@ export default function WordSetDetailPage() {
     if (!confirm("이 단어를 삭제할까요?")) return;
     try { await wordsApi.delete(wordId); } catch { /* ignore */ }
     setWords((prev) => prev.filter((w) => w.id !== wordId));
+  };
+
+  const handleToggleSave = async () => {
+    setSaveLoading(true);
+    try {
+      if (isSaved) {
+        await savedWordSetsApi.unsave(wordSetId);
+        setIsSaved(false);
+      } else {
+        await savedWordSetsApi.save(wordSetId);
+        setIsSaved(true);
+      }
+    } catch { /* ignore */ }
+    setSaveLoading(false);
   };
 
   const handleEditSave = async () => {
@@ -65,22 +83,33 @@ export default function WordSetDetailPage() {
           <h1 className="text-lg font-bold text-foreground truncate">{wordSet?.name ?? "단어 세트"}</h1>
           <p className="text-[11px] text-slate-500 mt-0.5">{words.length}개</p>
         </div>
-        <Link
-          href={`/study/weak?wordSetId=${wordSetId}`}
-          className="px-3 py-1.5 text-xs font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors"
+        <button
+          onClick={handleToggleSave}
+          disabled={saveLoading}
+          className={`p-1.5 rounded-lg transition-colors ${isSaved ? "text-yellow-400" : "text-slate-600 hover:text-slate-300"}`}
+          title={isSaved ? "저장 취소" : "세트 저장"}
         >
-          취약 단어
-        </Link>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
       </div>
 
       {/* 학습 모드 버튼 */}
-      <div className="grid grid-cols-2 gap-2 mb-6">
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        <Link
+          href={`/study/set-flashcard?wordSetId=${wordSetId}`}
+          className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift"
+        >
+          <p className="text-sm font-semibold text-foreground">세트 학습</p>
+          <p className="text-xs text-slate-500 mt-0.5">책갈피 지원</p>
+        </Link>
         <Link
           href={`/study/flashcard?wordSetId=${wordSetId}`}
           className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift"
         >
-          <p className="text-sm font-semibold text-foreground">플래시카드</p>
-          <p className="text-xs text-slate-500 mt-0.5">SM-2 복습</p>
+          <p className="text-sm font-semibold text-foreground">SM-2</p>
+          <p className="text-xs text-slate-500 mt-0.5">복습 알고리즘</p>
         </Link>
         <Link
           href={`/study/speedrun?wordSetId=${wordSetId}`}

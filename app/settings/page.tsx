@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { membersApi, settingsApi, authApi, autoImportApi, Member, Settings, AutoImportConfig, ImportHistory } from "@/lib/api";
+import { membersApi, settingsApi, authApi, autoImportApi, savedWordSetsApi, Member, Settings, AutoImportConfig, ImportHistory, SavedWordSet } from "@/lib/api";
 import { clearAccessToken } from "@/lib/auth";
 
 const AUTO_IMPORT_EMAIL = "aksdn1285@gmail.com";
@@ -60,6 +60,7 @@ export default function SettingsPage() {
   const [dailyGoal, setDailyGoal] = useState(20);
   const [randomOrder, setRandomOrder] = useState(false);
 
+  const [savedWordSets, setSavedWordSets] = useState<SavedWordSet[]>([]);
   const [autoImportConfig, setAutoImportConfig] = useState<AutoImportConfig | null>(null);
   const [importHistory, setImportHistory] = useState<ImportHistory[]>([]);
   const [importing, setImporting] = useState(false);
@@ -71,12 +72,13 @@ export default function SettingsPage() {
   const [autoImportBtn, runAutoImport] = useSectionBtn();
 
   useEffect(() => {
-    Promise.all([membersApi.getMe(), settingsApi.get()])
-      .then(([m, s]) => {
+    Promise.all([membersApi.getMe(), settingsApi.get(), savedWordSetsApi.getAll().catch(() => ({ data: [] }))])
+      .then(([m, s, saved]) => {
         setMember(m.data);
         setNickname(m.data.nickname);
         setDailyGoal(s.data.dailyGoal);
         setRandomOrder(s.data.shuffle);
+        setSavedWordSets(saved.data);
         if (m.data.email === AUTO_IMPORT_EMAIL) {
           Promise.all([autoImportApi.getConfig(), autoImportApi.getHistory()])
             .then(([cfg, hist]) => {
@@ -305,6 +307,33 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* 저장된 단어 세트 */}
+      {savedWordSets.length > 0 && (
+        <section className="bg-card rounded-2xl p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-foreground">저장된 단어 세트</h2>
+          <div className="space-y-1">
+            {savedWordSets.map((s) => (
+              <div key={s.wordSetId} className="flex items-center justify-between py-2">
+                <Link href={`/words/${s.wordSetId}`} className="text-sm text-slate-300 hover:text-primary transition-colors truncate flex-1">
+                  {s.name}
+                </Link>
+                <button
+                  onClick={async () => {
+                    await savedWordSetsApi.unsave(s.wordSetId).catch(() => {});
+                    setSavedWordSets((prev) => prev.filter((x) => x.wordSetId !== s.wordSetId));
+                  }}
+                  className="ml-3 text-slate-600 hover:text-wrong transition-colors shrink-0"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
