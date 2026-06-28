@@ -80,6 +80,8 @@ export const wordSetsApi = {
 
   create: (name: string) => api.post<WordSet>("/api/word-sets", { name }),
 
+  delete: (wordSetId: number) => api.delete(`/api/word-sets/${wordSetId}`),
+
   getProgress: () => api.get<WordSetProgress[]>("/api/word-sets/progress"),
 
   uploadQuizlet: (wordSetId: number, file: File) => {
