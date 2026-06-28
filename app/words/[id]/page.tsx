@@ -66,89 +66,99 @@ export default function WordSetDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-6 py-10 page-in">
       {/* 헤더 */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-slate-500 hover:text-slate-300 transition-colors">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => router.back()} 
+          className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center spring-active"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-foreground truncate">{wordSet?.name ?? "단어 세트"}</h1>
-          <p className="text-[11px] text-slate-500 mt-0.5">{words.length}개</p>
+          <h1 className="text-xl font-extrabold text-foreground truncate tracking-tight">{wordSet?.name ?? "단어 세트"}</h1>
+          <p className="text-xs text-slate-400 mt-1 font-medium">총 {words.length}개 영단어 등록됨</p>
         </div>
         <button
           onClick={handleToggleSave}
           disabled={saveLoading}
-          className={`p-1.5 rounded-lg transition-colors ${isSaved ? "text-yellow-400" : "text-slate-600 hover:text-slate-300"}`}
-          title={isSaved ? "저장 취소" : "세트 저장"}
+          className={`p-2.5 rounded-xl border transition-all spring-active ${
+            isSaved 
+              ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" 
+              : "text-slate-500 bg-white/[0.02] border-white/[0.08] hover:text-slate-300 hover:border-white/[0.15]"
+          }`}
+          title={isSaved ? "구독 해제" : "세트 구독 추가"}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
         </button>
       </div>
 
       {/* 학습 모드 버튼 */}
-      <div className="grid grid-cols-3 gap-2 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         <Link
           href={`/study/set-flashcard?wordSetId=${wordSetId}`}
-          className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift"
+          className="glass-card rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 hover:bg-slate-900/40 group spring-active"
         >
-          <p className="text-sm font-semibold text-foreground">세트 학습</p>
-          <p className="text-xs text-slate-500 mt-0.5">책갈피 지원</p>
+          <p className="text-sm font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">세트 집중 학습</p>
+          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">마지막 풀던 위치에서 끊김 없이 바로 이어서 학습합니다.</p>
         </Link>
         <Link
           href={`/study/flashcard?wordSetId=${wordSetId}`}
-          className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift"
+          className="glass-card rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 hover:bg-slate-900/40 group spring-active"
         >
-          <p className="text-sm font-semibold text-foreground">SM-2</p>
-          <p className="text-xs text-slate-500 mt-0.5">복습 알고리즘</p>
+          <p className="text-sm font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">SM-2 복습</p>
+          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">에빙하우스 망각 곡선 알고리즘에 기초해 복습 시점을 설계합니다.</p>
         </Link>
         <Link
           href={`/study/speedrun?wordSetId=${wordSetId}`}
-          className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift"
+          className="glass-card rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 hover:bg-slate-900/40 group spring-active"
         >
-          <p className="text-sm font-semibold text-foreground">스피드런</p>
-          <p className="text-xs text-slate-500 mt-0.5">60초 타임어택</p>
+          <p className="text-sm font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">스피드런 게임</p>
+          <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">이 세트의 단어들로 구성된 60초 타이핑 타임어택을 진행합니다.</p>
         </Link>
       </div>
 
       {/* 단어 목록 */}
-      <div className="space-y-px">
+      <div className="glass-card rounded-2xl divide-y divide-white/[0.03] overflow-hidden">
         {words.map((word, i) => (
           <div
             key={word.id}
-            className="flex items-center justify-between px-3 py-3 rounded-lg hover:bg-white/[0.03] group transition-colors"
+            className="flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] group transition-colors"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="text-[11px] text-slate-700 tabular-nums w-5 shrink-0 text-right">{i + 1}</span>
+            <div className="flex items-center gap-4 min-w-0">
+              <span className="text-xs font-bold text-slate-600 tabular-nums w-5 shrink-0 text-right">{i + 1}</span>
               <div className="min-w-0">
-                <span className="font-mono text-sm text-foreground tracking-tight">{word.english}</span>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">{word.korean}</p>
+                <span className="font-mono text-[15px] font-bold text-foreground tracking-tight">{word.english}</span>
+                <p className="text-xs text-slate-400 mt-1 truncate font-medium">{word.korean}</p>
               </div>
             </div>
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+            {/* 액션 버튼 */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 ml-4">
               <button
                 onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
-                className="p-1.5 text-slate-600 hover:text-slate-300 transition-colors rounded"
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] rounded-lg transition-all spring-active"
+                title="수정"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
               </button>
               <button
                 onClick={() => handleDelete(word.id)}
-                className="p-1.5 text-slate-600 hover:text-wrong/80 transition-colors rounded"
+                className="p-2 text-slate-400 hover:text-wrong hover:bg-wrong/5 rounded-lg transition-all spring-active"
+                title="삭제"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                   <path d="M10 11v6M14 11v6" />
@@ -160,10 +170,10 @@ export default function WordSetDetailPage() {
         ))}
 
         {words.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-sm text-slate-600">단어가 없어요</p>
-            <Link href="/words/upload" className="mt-2 inline-block text-xs text-primary/70 hover:text-primary transition-colors">
-              업로드하기 →
+          <div className="text-center py-20 text-slate-500">
+            <p className="text-sm font-semibold text-slate-400">등록된 단어가 없습니다</p>
+            <Link href="/words/upload font-bold" className="mt-4 inline-block text-xs bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-xl hover:bg-primary/20 transition-all spring-active">
+              단어 업로드하기 →
             </Link>
           </div>
         )}
@@ -171,30 +181,40 @@ export default function WordSetDetailPage() {
 
       {/* 수정 모달 */}
       {editingWord && (
-        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
-          <div className="bg-card border border-white/[0.07] rounded-xl p-5 w-full max-w-sm shadow-2xl">
-            <p className="text-sm font-semibold text-foreground mb-4">단어 수정</p>
-            <div className="space-y-3">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in">
+          <div className="glass-card border-white/[0.08] rounded-3xl p-6 w-full max-w-sm shadow-2xl bg-[#0E111E]">
+            <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
+            <div className="space-y-4">
               <div>
-                <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5 block">영단어</label>
+                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">영단어 (English)</label>
                 <input
                   value={editEnglish}
                   onChange={(e) => setEditEnglish(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                  className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5 block">뜻</label>
+                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">한국어 뜻 (Korean)</label>
                 <input
                   value={editKorean}
                   onChange={(e) => setEditKorean(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                  className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
                 />
               </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <button onClick={() => setEditingWord(null)} className="flex-1 py-2.5 text-sm text-slate-500 border border-white/[0.07] rounded-lg hover:text-slate-300 transition-colors">취소</button>
-              <button onClick={handleEditSave} className="flex-1 py-2.5 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">저장</button>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setEditingWord(null)}
+                className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-200 border border-white/[0.08] rounded-xl transition-all spring-active"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="flex-1 py-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
+              >
+                저장
+              </button>
             </div>
           </div>
         </div>

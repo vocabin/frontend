@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { membersApi, settingsApi, authApi, autoImportApi, savedWordSetsApi, Member, Settings, AutoImportConfig, ImportHistory, SavedWordSet } from "@/lib/api";
+import { membersApi, settingsApi, authApi, autoImportApi, savedWordSetsApi, Member, SavedWordSet, AutoImportConfig, ImportHistory } from "@/lib/api";
 import { clearAccessToken } from "@/lib/auth";
 
 const AUTO_IMPORT_EMAIL = "aksdn1285@gmail.com";
@@ -29,22 +29,26 @@ function useSectionBtn(): [BtnState, (fn: () => Promise<void>) => void] {
 }
 
 function SectionBtn({ state, label, onClick }: { state: BtnState; label: string; onClick: () => void }) {
-  const labels = { idle: label, loading: "저장 중…", success: "✓ 저장됨", error: "✗ 실패" };
+  const labels = { idle: label, loading: "저장 중…", success: "✓ 저장 완료", error: "✗ 실패" };
   return (
     <button
       onClick={onClick}
       disabled={state === "loading"}
-      className={`w-full py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
-        state === "success" ? "bg-correct text-white" :
-        state === "error"   ? "bg-wrong text-white" :
-        state === "loading" ? "bg-primary/60 text-white cursor-not-allowed" :
-        "bg-primary text-white hover:bg-primary-hover"
+      className={`w-full py-3 text-sm font-bold rounded-xl transition-all duration-200 spring-active ${
+        state === "success" ? "bg-correct text-white shadow-lg shadow-correct/10" :
+        state === "error"   ? "bg-wrong text-white shadow-lg shadow-wrong/10" :
+        state === "loading" ? "bg-primary/50 text-white cursor-not-allowed" :
+        "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/10"
       }`}
     >
-      {state === "loading"
-        ? <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{labels.loading}</span>
-        : labels[state]
-      }
+      {state === "loading" ? (
+        <span className="flex items-center justify-center gap-2">
+          <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          {labels.loading}
+        </span>
+      ) : (
+        labels[state]
+      )}
     </button>
   );
 }
@@ -71,6 +75,25 @@ export default function SettingsPage() {
   const [pwBtn, runPw] = useSectionBtn();
   const [settingsBtn, runSettings] = useSectionBtn();
   const [autoImportBtn, runAutoImport] = useSectionBtn();
+
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const activeTheme = document.documentElement.classList.contains("light") ? "light" : "dark";
+    setTheme(activeTheme);
+  }, []);
+
+  const toggleThemeState = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    if (nextTheme === "light") {
+      document.documentElement.classList.add("light");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.documentElement.classList.remove("light");
+      localStorage.setItem("theme", "dark");
+    }
+  };
 
   useEffect(() => {
     Promise.all([membersApi.getMe(), settingsApi.get(), savedWordSetsApi.getAll().catch(() => ({ data: [] }))])
@@ -153,119 +176,149 @@ export default function SettingsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 space-y-5">
-      <h1 className="text-2xl font-bold text-foreground">설정</h1>
+    <div className="max-w-2xl mx-auto px-6 py-10 page-in space-y-6">
+      <h1 className="text-2xl font-extrabold text-foreground tracking-tight">설정</h1>
 
       {/* 계정 정보 */}
-      <section className="bg-card rounded-2xl p-5 space-y-3">
+      <section className="glass-card rounded-2xl p-6 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">계정 정보</h2>
-          {member && <p className="text-xs text-slate-500 mt-0.5">{member.email}</p>}
+          <h2 className="text-sm font-bold text-foreground tracking-tight">계정 정보</h2>
+          {member && <p className="text-xs text-slate-400 mt-1 font-medium">{member.email}</p>}
         </div>
         <div className="flex gap-2">
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임"
-            className="flex-1 bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+            className="flex-1 bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
           />
           <button
             onClick={handleNickname}
             disabled={nicknameBtn === "loading"}
-            className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 shrink-0 ${
+            className={`px-5 py-3 text-sm font-bold rounded-xl transition-all duration-200 shrink-0 spring-active ${
               nicknameBtn === "success" ? "bg-correct text-white" :
               nicknameBtn === "error"   ? "bg-wrong text-white" :
               "bg-primary text-white hover:bg-primary-hover"
             }`}
           >
-            {nicknameBtn === "success" ? "✓" : nicknameBtn === "error" ? "✗" : "변경"}
+            {nicknameBtn === "success" ? "✓ 완료" : nicknameBtn === "error" ? "✗ 실패" : "변경"}
           </button>
         </div>
       </section>
 
       {/* 비밀번호 변경 */}
-      <section className="bg-card rounded-2xl p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">비밀번호 변경</h2>
-        <input
-          type="password"
-          value={currentPw}
-          onChange={(e) => setCurrentPw(e.target.value)}
-          placeholder="현재 비밀번호"
-          className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-        />
-        <input
-          type="password"
-          value={newPw}
-          onChange={(e) => setNewPw(e.target.value)}
-          placeholder="새 비밀번호"
-          className="w-full bg-slate-900/50 border border-slate-700 text-foreground rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-        />
-        {pwError && <p className="text-xs text-wrong">{pwError}</p>}
+      <section className="glass-card rounded-2xl p-6 space-y-4">
+        <h2 className="text-sm font-bold text-foreground tracking-tight">비밀번호 변경</h2>
+        <div className="space-y-3">
+          <input
+            type="password"
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+            placeholder="현재 비밀번호"
+            className="w-full bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
+          />
+          <input
+            type="password"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            placeholder="새 비밀번호"
+            className="w-full bg-slate-950/60 border border-white/[0.08] text-foreground rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/80 transition-colors font-medium"
+          />
+        </div>
+        {pwError && <p className="text-xs text-wrong font-semibold">⚠️ {pwError}</p>}
         <SectionBtn state={pwBtn} label="비밀번호 변경" onClick={handlePassword} />
       </section>
 
       {/* 학습 설정 */}
-      <section className="bg-card rounded-2xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-foreground">학습 설정</h2>
-        <div className="flex items-center justify-between">
+      <section className="glass-card rounded-2xl p-6 space-y-5">
+        <h2 className="text-sm font-bold text-foreground tracking-tight">학습 설정</h2>
+        
+        <div className="flex items-center justify-between border-b border-white/[0.04] pb-4">
           <div>
-            <p className="text-sm font-medium text-slate-300">하루 목표 단어 수</p>
-            <p className="text-xs text-slate-500 mt-0.5">플래시카드에서 하루 학습할 단어 수</p>
+            <p className="text-sm font-semibold text-slate-200">하루 목표 단어 수</p>
+            <p className="text-xs text-slate-500 mt-1 font-medium">플래시카드 학습 시 하루에 표시될 단어 개수</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setDailyGoal((v) => Math.max(5, v - 5))}
-              className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors"
+              className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all spring-active font-bold"
             >−</button>
-            <span className="text-sm font-bold text-primary w-8 text-center tabular-nums">{dailyGoal}</span>
+            <span className="text-sm font-extrabold text-primary w-8 text-center tabular-nums">{dailyGoal}</span>
             <button
               onClick={() => setDailyGoal((v) => Math.min(100, v + 5))}
-              className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors"
+              className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] hover:border-white/[0.15] transition-all spring-active font-bold"
             >+</button>
           </div>
         </div>
+
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-300">랜덤 순서</p>
-            <p className="text-xs text-slate-500 mt-0.5">단어를 무작위 순서로 학습</p>
+            <p className="text-sm font-semibold text-slate-200">랜덤 순서 활성화</p>
+            <p className="text-xs text-slate-500 mt-1 font-medium">단어 목록을 학습할 때 무작위 순서로 노출합니다</p>
           </div>
           <button
             onClick={() => setRandomOrder((v) => !v)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${randomOrder ? "bg-primary" : "bg-slate-700"}`}
+            className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${randomOrder ? "bg-primary" : "bg-slate-800"}`}
           >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${randomOrder ? "translate-x-5" : "translate-x-0"}`} />
+            <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${randomOrder ? "translate-x-5" : "translate-x-0"}`} />
           </button>
         </div>
-        <SectionBtn state={settingsBtn} label="저장" onClick={handleSettings} />
+
+        <SectionBtn state={settingsBtn} label="설정 저장" onClick={handleSettings} />
+      </section>
+
+      {/* 화면 테마 설정 */}
+      <section className="glass-card rounded-2xl p-6 space-y-4">
+        <h2 className="text-sm font-bold text-foreground tracking-tight">화면 테마 설정</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-200">라이트 모드 적용</p>
+            <p className="text-xs text-slate-500 mt-1 font-medium">화면 테마를 어두운 색상에서 밝은 색상으로 전환합니다</p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleThemeState}
+            className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${theme === "light" ? "bg-primary" : "bg-slate-800"}`}
+          >
+            <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${theme === "light" ? "translate-x-5" : "translate-x-0"}`} />
+          </button>
+        </div>
       </section>
 
       {/* 자동 임포트 (aksdn1285@gmail.com 전용) */}
       {member?.email === AUTO_IMPORT_EMAIL && autoImportConfig && (
-        <section className="bg-card rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
+        <section className="glass-card rounded-2xl p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-white/[0.04] pb-4">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">퀴즐렛 자동 임포트</h2>
-              <p className="text-xs text-slate-500 mt-0.5">fluent 수업 단어를 자동으로 가져와요</p>
+              <h2 className="text-sm font-bold text-foreground tracking-tight">퀴즐렛 자동 임포트</h2>
+              <p className="text-xs text-slate-500 mt-1 font-medium">fluent 수업 단어를 주기적으로 자동 연동합니다</p>
             </div>
             <button
               onClick={() => setAutoImportConfig({ ...autoImportConfig, enabled: !autoImportConfig.enabled })}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${autoImportConfig.enabled ? "bg-primary" : "bg-slate-700"}`}
+              className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${autoImportConfig.enabled ? "bg-primary" : "bg-slate-800"}`}
             >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${autoImportConfig.enabled ? "translate-x-5" : "translate-x-0"}`} />
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${autoImportConfig.enabled ? "translate-x-5" : "translate-x-0"}`} />
             </button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-300">요일</p>
-            <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-slate-200">연동 요일</p>
+            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
               {[1,2,3,4,5,6,7].map((d) => (
-                <button key={d} onClick={() => setAutoImportConfig({ ...autoImportConfig, dayOfWeek: d })}
-                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${autoImportConfig.dayOfWeek === d ? "bg-primary text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"}`}>
+                <button 
+                  key={d} 
+                  onClick={() => setAutoImportConfig({ ...autoImportConfig, dayOfWeek: d })}
+                  className={`w-9 h-9 rounded-lg text-xs font-bold transition-all shrink-0 spring-active ${
+                    autoImportConfig.dayOfWeek === d 
+                      ? "bg-primary text-white shadow-md shadow-primary/10" 
+                      : "bg-white/[0.02] border border-white/[0.08] text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+                  }`}
+                >
                   {DOW_LABELS[d]}
                 </button>
               ))}
@@ -273,36 +326,54 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-300">시간</p>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.max(0, autoImportConfig.hour - 1) })}
-                className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors">−</button>
-              <span className="text-sm font-bold text-primary w-12 text-center tabular-nums">{String(autoImportConfig.hour).padStart(2,"0")}:00</span>
-              <button onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.min(23, autoImportConfig.hour + 1) })}
-                className="w-7 h-7 rounded-lg border border-slate-700 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-colors">+</button>
+            <p className="text-sm font-semibold text-slate-200">연동 시간</p>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.max(0, autoImportConfig.hour - 1) })}
+                className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] transition-all spring-active font-bold"
+              >−</button>
+              <span className="text-sm font-extrabold text-primary w-12 text-center tabular-nums">{String(autoImportConfig.hour).padStart(2,"0")}:00</span>
+              <button 
+                onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.min(23, autoImportConfig.hour + 1) })}
+                className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-slate-300 hover:bg-white/[0.06] transition-all spring-active font-bold"
+              >+</button>
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <SectionBtn state={autoImportBtn} label="저장" onClick={handleAutoImportSave} />
-            <button onClick={handleTrigger} disabled={importing}
-              className="flex-1 py-2.5 bg-slate-700 text-slate-200 text-sm font-medium rounded-xl hover:bg-slate-600 transition-colors disabled:opacity-50">
-              {importing ? <span className="flex items-center justify-center gap-1.5"><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>가져오는 중</span> : "지금 가져오기"}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <SectionBtn state={autoImportBtn} label="설정 저장" onClick={handleAutoImportSave} />
+            </div>
+            <button 
+              onClick={handleTrigger} 
+              disabled={importing}
+              className="flex-1 py-3 bg-white/[0.04] border border-white/[0.06] text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.12] text-sm font-bold rounded-xl transition-all disabled:opacity-50 spring-active flex items-center justify-center gap-2"
+            >
+              {importing ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  동기화 중...
+                </>
+              ) : (
+                "수동 즉시 동기화"
+              )}
             </button>
           </div>
 
           {importMsg && (
-            <p className={`text-xs text-center ${importMsg.includes("실패") ? "text-wrong" : "text-correct"}`}>{importMsg}</p>
+            <p className={`text-xs text-center font-semibold ${importMsg.includes("실패") ? "text-wrong" : "text-correct"}`}>
+              {importMsg}
+            </p>
           )}
 
           {importHistory.length > 0 && (
-            <div className="pt-3 border-t border-slate-700/50">
-              <p className="text-xs text-slate-500 mb-2">임포트 이력</p>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto scrollbar-hide">
+            <div className="pt-4 border-t border-white/[0.04]">
+              <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">임포트 히스토리</p>
+              <div className="space-y-2 max-h-36 overflow-y-auto scrollbar-hide pr-1">
                 {importHistory.slice(0, 10).map((h) => (
-                  <div key={h.externalClassId} className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 truncate max-w-[65%]">{h.externalClassId}</span>
-                    <span className="text-slate-600 shrink-0 tabular-nums">{h.importedAt.slice(0, 10)}</span>
+                  <div key={h.externalClassId} className="flex items-center justify-between text-xs py-1 border-b border-white/[0.02]">
+                    <span className="text-slate-400 truncate max-w-[65%] font-medium">{h.externalClassId}</span>
+                    <span className="text-slate-500 shrink-0 tabular-nums font-semibold">{h.importedAt.slice(0, 10)}</span>
                   </div>
                 ))}
               </div>
@@ -313,12 +384,12 @@ export default function SettingsPage() {
 
       {/* 저장된 단어 세트 */}
       {savedWordSets.length > 0 && (
-        <section className="bg-card rounded-2xl p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">저장된 단어 세트</h2>
-          <div className="space-y-1">
+        <section className="glass-card rounded-2xl p-6 space-y-4">
+          <h2 className="text-sm font-bold text-foreground tracking-tight">구독 중인 단어 세트</h2>
+          <div className="space-y-1 divide-y divide-white/[0.03]">
             {savedWordSets.map((s) => (
-              <div key={s.wordSetId} className="flex items-center justify-between py-2">
-                <Link href={`/words/${s.wordSetId}`} className="text-sm text-slate-300 hover:text-primary transition-colors truncate flex-1">
+              <div key={s.wordSetId} className="flex items-center justify-between py-3">
+                <Link href={`/words/${s.wordSetId}`} className="text-sm font-semibold text-slate-300 hover:text-primary transition-colors truncate flex-1 tracking-tight">
                   {s.name}
                 </Link>
                 <button
@@ -326,9 +397,10 @@ export default function SettingsPage() {
                     await savedWordSetsApi.unsave(s.wordSetId).catch(() => {});
                     setSavedWordSets((prev) => prev.filter((x) => x.wordSetId !== s.wordSetId));
                   }}
-                  className="ml-3 text-slate-600 hover:text-wrong transition-colors shrink-0"
+                  className="ml-3 text-slate-500 hover:text-wrong transition-colors shrink-0 p-1 rounded-lg hover:bg-wrong/5 spring-active"
+                  title="세트 구독 취소"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
                 </button>
@@ -339,13 +411,17 @@ export default function SettingsPage() {
       )}
 
       {/* 로그아웃 / 탈퇴 */}
-      <div className="space-y-2 pt-1">
-        <button onClick={handleLogout}
-          className="w-full py-3 border border-slate-700 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition-colors">
+      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+        <button 
+          onClick={handleLogout}
+          className="flex-1 py-3 bg-white/[0.02] border border-white/[0.06] rounded-xl text-sm font-bold text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] transition-all spring-active"
+        >
           로그아웃
         </button>
-        <button onClick={handleDeleteAccount}
-          className="w-full py-3 text-sm font-medium text-wrong hover:bg-wrong/5 rounded-xl transition-colors">
+        <button 
+          onClick={handleDeleteAccount}
+          className="flex-1 py-3 bg-wrong/5 hover:bg-wrong/10 text-sm font-bold text-wrong rounded-xl transition-all spring-active"
+        >
           회원 탈퇴
         </button>
       </div>
