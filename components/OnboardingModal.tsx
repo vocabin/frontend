@@ -9,7 +9,7 @@ const SLIDES = [
     icon: "🚀",
   },
   {
-    title: "스마트한 SM-2 전역 복습 🧠",
+    title: "스마트한 SM-2 알고리즘 🧠",
     description: "주차별 단어 세트에 얽매일 필요 없습니다! 플래시카드와 스피드런은 전체 단어 중 '가장 복습이 시급한 단어'를 SM-2 알고리즘으로 자동 추출해 줍니다.",
     icon: "✨",
   },
@@ -24,7 +24,7 @@ const SLIDES = [
     icon: "⚡",
   },
   {
-    title: "취약 단어는 알아서 모아드려요 🎯",
+    title: "취약 단어는 자동 수집 🎯",
     description: "플래시카드나 스피드런에서 3번 이상 틀린 단어는 자동으로 '취약 단어' 메뉴에 수집됩니다. 복습 효율을 극대화해보세요.",
     icon: "📊",
   },
@@ -66,36 +66,36 @@ export default function OnboardingModal() {
   const slide = SLIDES[currentSlide];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border border-slate-800">
-        <div className="px-6 py-8 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md fade-in">
+      <div className="glass-card w-full max-w-[390px] rounded-3xl shadow-2xl overflow-hidden border-white/[0.06] bg-[#0E111E]">
+        <div className="px-6 pt-8 pb-6 relative">
           {/* Skip Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 text-xs font-medium text-slate-500 hover:text-slate-300 transition-colors"
+            className="absolute top-5 right-5 text-xs font-bold text-slate-500 hover:text-slate-350 transition-colors cursor-pointer"
           >
             건너뛰기
           </button>
 
           {/* Icon */}
-          <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center text-3xl mb-6 mx-auto">
+          <div className="w-16 h-16 bg-white/[0.02] border border-white/[0.08] rounded-2xl flex items-center justify-center text-3xl mb-6 mx-auto shadow-inner">
             {slide.icon}
           </div>
 
           {/* Text Content */}
           <div className="text-center min-h-[140px]">
-            <h2 className="text-lg font-bold text-foreground mb-3">{slide.title}</h2>
-            <p className="text-sm text-slate-400 leading-relaxed">{slide.description}</p>
+            <h2 className="text-lg font-extrabold text-foreground mb-3 tracking-tight">{slide.title}</h2>
+            <p className="text-xs text-slate-400 leading-relaxed font-semibold px-2">{slide.description}</p>
             
             {/* Features (if any) */}
             {slide.features && (
-              <div className="mt-5 space-y-2 text-left bg-slate-900/50 rounded-xl p-4 border border-slate-800/60">
+              <div className="mt-5 space-y-2 text-left bg-slate-950/40 rounded-2xl p-4 border border-white/[0.04]">
                 {slide.features.map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <span className="px-2 py-1 bg-slate-800 rounded text-xs font-bold text-slate-300 min-w-[70px] text-center">
+                    <span className="font-mono px-2 py-1 bg-slate-900 border border-white/[0.08] rounded-lg text-[10px] font-bold text-slate-300 min-w-[76px] text-center shadow-inner">
                       {feature.label}
                     </span>
-                    <span className="text-sm text-slate-400">{feature.desc}</span>
+                    <span className="text-xs font-bold text-slate-400">{feature.desc}</span>
                   </div>
                 ))}
               </div>
@@ -104,20 +104,20 @@ export default function OnboardingModal() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-5 bg-slate-900/30 flex items-center justify-between border-t border-slate-800">
+        <div className="px-6 py-4.5 bg-slate-950/20 flex items-center justify-between border-t border-white/[0.04]">
           <div className="flex gap-1.5">
             {SLIDES.map((_, idx) => (
               <div
                 key={idx}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === currentSlide ? "w-4 bg-primary" : "w-1.5 bg-slate-700"
+                  idx === currentSlide ? "w-5 bg-primary" : "w-1.5 bg-slate-800"
                 }`}
               />
             ))}
           </div>
           <button
             onClick={handleNext}
-            className="px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-hover active:scale-95 transition-all"
+            className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold rounded-xl shadow-lg shadow-primary/10 transition-all spring-active"
           >
             {currentSlide === SLIDES.length - 1 ? "시작하기" : "다음"}
           </button>

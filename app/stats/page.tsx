@@ -71,82 +71,93 @@ export default function StatsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
+    <div className="max-w-3xl mx-auto px-6 py-10 page-in space-y-6">
       {/* 헤더 */}
-      <div className="mb-2">
-        <h1 className="text-xl font-bold text-foreground">통계</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          {now.getFullYear()}년 {now.getMonth() + 1}월
+      <div>
+        <h1 className="text-2xl font-extrabold text-foreground tracking-tight">학습 통계</h1>
+        <p className="text-xs text-slate-400 mt-2 font-medium">
+          {now.getFullYear()}년 {now.getMonth() + 1}월의 전체 학습 흐름 분석
         </p>
       </div>
 
       {/* 요약 카드 */}
       {summary && (
-        <div className="grid grid-cols-2 gap-2 stagger">
-          <div className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-2">총 단어</p>
-            <p className="text-3xl font-bold text-foreground tabular-nums num-pop">{summary.totalWords}</p>
-            <p className="text-[11px] text-slate-600 mt-1">개</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger">
+          <div className="glass-card rounded-2xl p-5 transition-all duration-300 hover:border-white/10">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">총 단어 수</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-3xl font-extrabold text-foreground tabular-nums num-pop tracking-tight">{summary.totalWords}</p>
+              <span className="text-xs text-slate-400 font-medium">개</span>
+            </div>
           </div>
-          <div className="bg-card border border-white/[0.05] rounded-xl p-4 card-lift">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-2">전체 정답률</p>
-            <p className="text-3xl font-bold text-primary tabular-nums num-pop">{Math.round(summary.correctRate * 100)}</p>
-            <p className="text-[11px] text-slate-600 mt-1">%</p>
+          <div className="glass-card rounded-2xl p-5 transition-all duration-300 hover:border-white/10">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">전체 정답률</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-3xl font-extrabold text-primary tabular-nums num-pop tracking-tight">{Math.round(summary.correctRate * 100)}</p>
+              <span className="text-xs text-slate-400 font-medium">%</span>
+            </div>
           </div>
-          <div className="bg-card border border-white/[0.05] rounded-xl p-3.5">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">연속 학습</p>
-            <p className="text-xl font-bold text-foreground tabular-nums">
-              {summary.streakDays}
-              <span className="text-sm font-normal text-slate-500 ml-1">일</span>
-            </p>
+          <div className="glass-card rounded-2xl p-5 transition-all duration-300 hover:border-white/10">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">현재 스트릭</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-3xl font-extrabold text-orange-400 tabular-nums num-pop tracking-tight">{summary.streakDays}</p>
+              <span className="text-xs text-slate-400 font-medium">일</span>
+            </div>
           </div>
-          <div className="bg-card border border-white/[0.05] rounded-xl p-3.5">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">총 학습 기록</p>
-            <p className="text-xl font-bold text-foreground tabular-nums">
-              {summary.totalRecords}
-              <span className="text-sm font-normal text-slate-500 ml-1">회</span>
-            </p>
+          <div className="glass-card rounded-2xl p-5 transition-all duration-300 hover:border-white/10">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">총 복습 횟수</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-3xl font-extrabold text-foreground tabular-nums num-pop tracking-tight">{summary.totalRecords}</p>
+              <span className="text-xs text-slate-400 font-medium">회</span>
+            </div>
           </div>
         </div>
       )}
 
       {/* 주간 정답률 */}
       {weeklyWithLabel.length > 0 && (
-        <div className="bg-card border border-white/[0.05] rounded-xl p-5">
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-5">이번 주 정답률</p>
-          <div className="flex items-end gap-1.5" style={{ height: "80px" }}>
+        <div className="glass-card rounded-2xl p-6">
+          <p className="text-sm font-bold text-foreground mb-6 tracking-tight">이번 주 일별 정답률</p>
+          <div className="flex items-end gap-3 sm:gap-4 h-32 px-2">
             {weeklyWithLabel.map((w, i) => {
               const heightPct = maxRate > 0 ? (w.correctRate / maxRate) * 100 : 0;
               const isToday = w.date === todayDateStr;
               return (
-                <div key={w.date} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-full flex flex-col justify-end" style={{ height: "60px" }}>
+                <div key={w.date} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full flex flex-col justify-end h-24 relative group">
+                    {/* Hover tooltip */}
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 border border-white/[0.08] text-[9px] font-semibold text-slate-300 px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                      {Math.round(w.correctRate * 100)}%
+                    </div>
                     <div
-                      className={`w-full rounded-sm bar-fill ${isToday ? "bg-primary" : "bg-primary/35"}`}
+                      className={`w-full rounded-full bar-fill transition-all duration-300 ${
+                        isToday 
+                          ? "bg-gradient-to-t from-primary to-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.3)]" 
+                          : "bg-primary/20 hover:bg-primary/40 border border-primary/10"
+                      }`}
                       style={{
-                        height: `${heightPct}%`,
-                        animationDelay: `${i * 50}ms`,
-                        minHeight: heightPct > 0 ? "3px" : "0",
+                        height: `${Math.max(8, heightPct)}%`,
+                        animationDelay: `${i * 40}ms`,
                       }}
                     />
                   </div>
-                  <span className={`text-[10px] font-medium ${isToday ? "text-primary" : "text-slate-600"}`}>
+                  <span className={`text-xs font-semibold ${isToday ? "text-primary" : "text-slate-400"}`}>
                     {w.dayLabel}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="flex gap-1.5 mt-3 border-t border-white/[0.04] pt-3">
+          <div className="flex gap-3 sm:gap-4 mt-4 border-t border-white/[0.04] pt-4 px-2">
             {weeklyWithLabel.map((w) => (
               <div key={w.date} className="flex-1 text-center">
-                <span className="text-[10px] tabular-nums text-slate-500">
+                <span className="text-[10px] font-bold tabular-nums text-slate-500">
                   {Math.round(w.correctRate * 100)}%
                 </span>
               </div>
@@ -156,16 +167,16 @@ export default function StatsPage() {
       )}
 
       {/* 학습 히트맵 */}
-      <div className="bg-card border border-white/[0.05] rounded-xl p-5">
-        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-4">
-          {now.getMonth() + 1}월 학습 기록
+      <div className="glass-card rounded-2xl p-6">
+        <p className="text-sm font-bold text-foreground mb-5 tracking-tight">
+          {now.getMonth() + 1}월 일별 학습 현황
         </p>
-        <div className="grid grid-cols-7 gap-px mb-1">
+        <div className="grid grid-cols-7 gap-px mb-2 text-center">
           {DAYS.map((d) => (
-            <div key={d} className="text-center text-[10px] text-slate-700 pb-1">{d}</div>
+            <div key={d} className="text-[10px] font-bold text-slate-500 pb-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-2">
           {Array.from({ length: firstDayOfWeek }).map((_, i) => (
             <div key={`e-${i}`} />
           ))}
@@ -178,41 +189,45 @@ export default function StatsPage() {
             return (
               <div
                 key={dayStr}
-                title={`${i + 1}일${studied ? " ✓" : ""}`}
-                className={`aspect-square rounded-sm transition-colors ${
-                  isFuture ? "bg-white/[0.02]" : studied ? "bg-primary/60" : "bg-white/[0.04]"
-                } ${isToday ? "ring-1 ring-primary/50" : ""}`}
+                title={`${now.getMonth() + 1}월 ${i + 1}일${studied ? " (학습 완료)" : " (미학습)"}`}
+                className={`aspect-square rounded-lg transition-all duration-200 cursor-pointer ${
+                  isFuture 
+                    ? "bg-white/[0.01] border border-white/[0.02] cursor-default" 
+                    : studied 
+                      ? "bg-gradient-to-tr from-primary to-blue-400 shadow-[0_0_4px_rgba(59,130,246,0.25)] hover:scale-105" 
+                      : "bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06]"
+                } ${isToday ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
               />
             );
           })}
         </div>
-        <div className="flex items-center gap-1 mt-3 justify-end">
-          <span className="text-[10px] text-slate-700 mr-0.5">미학습</span>
-          <div className="w-2.5 h-2.5 rounded-sm bg-white/[0.04]" />
-          <div className="w-2.5 h-2.5 rounded-sm bg-primary/60" />
-          <span className="text-[10px] text-slate-700 ml-0.5">학습</span>
+        <div className="flex items-center gap-2.5 mt-5 justify-end">
+          <span className="text-[10px] font-bold text-slate-500">Less</span>
+          <div className="w-3 h-3 rounded bg-white/[0.03] border border-white/[0.04]" />
+          <div className="w-3 h-3 rounded bg-gradient-to-tr from-primary to-blue-400" />
+          <span className="text-[10px] font-bold text-slate-500">More</span>
         </div>
       </div>
 
       {/* 세트별 진행률 */}
       {progress.length > 0 && (
-        <div className="bg-card border border-white/[0.05] rounded-xl p-5">
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-4">세트별 진행률</p>
-          <div className="space-y-5">
+        <div className="glass-card rounded-2xl p-6">
+          <p className="text-sm font-bold text-foreground mb-5 tracking-tight">세트별 완수 상태</p>
+          <div className="space-y-6">
             {progress.map((p) => {
               const pct = p.totalWords > 0 ? Math.round((p.studiedWords / p.totalWords) * 100) : 0;
               return (
                 <div key={p.wordSetId}>
-                  <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-sm text-foreground">{p.name}</span>
-                    <div className="flex items-baseline gap-2 tabular-nums">
-                      <span className="text-[11px] text-slate-600">{p.studiedWords}/{p.totalWords}</span>
-                      <span className="text-sm font-semibold text-primary">{pct}%</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-foreground truncate max-w-[70%]">{p.name}</span>
+                    <div className="flex items-baseline gap-2 tabular-nums shrink-0">
+                      <span className="text-[10px] font-semibold text-slate-400">{p.studiedWords}/{p.totalWords} 단어</span>
+                      <span className="text-sm font-extrabold text-primary">{pct}%</span>
                     </div>
                   </div>
-                  <div className="h-1 bg-white/[0.05] rounded-full">
+                  <div className="h-2 bg-white/[0.03] rounded-full overflow-hidden">
                     <div
-                      className="h-1 bg-primary rounded-full transition-all duration-700"
+                      className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-700 shadow-[0_0_6px_rgba(59,130,246,0.2)]"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

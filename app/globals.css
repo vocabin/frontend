@@ -1,23 +1,102 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #0E121B;
-  --color-foreground: #F0F4FF;
-  --color-card:       #161D2D;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card:       var(--card);
+  --color-border:     var(--border-color);
+  --color-muted:      var(--text-muted);
+  --color-sub:        var(--text-sub);
 
-  --color-primary:       #3B82F6;
-  --color-primary-hover: #2563EB;
+  --color-primary:       var(--primary);
+  --color-primary-hover: var(--primary-hover);
 
-  --color-correct: #34C759;
-  --color-wrong:   #FF453A;
+  --color-correct: var(--correct);
+  --color-wrong:   var(--wrong);
+}
+
+:root {
+  /* Default: Elevated Dark Mode for premium contrast & readability */
+  --background: #11131E;
+  --foreground: #F8FAFC;
+  --card: #1A1F31;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-muted: #94A3B8;
+  --text-sub: #64748B;
+  
+  --primary: #3B82F6;
+  --primary-hover: #2563EB;
+  --correct: #10B981;
+  --wrong: #EF4444;
+  
+  --glass-bg: rgba(26, 31, 49, 0.7);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  
+  --streak-bg: #161925;
+  --logo-filter: invert(1);
+  --nav-indicator-bg: rgba(255, 255, 255, 0.03);
+  
+  --bg-gradient: 
+    radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.16), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.06), transparent 30%);
+}
+
+.light {
+  /* Premium Soft Alabaster Light Mode with soft gradient accents */
+  --background: #F3F4F6;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --border-color: rgba(15, 23, 42, 0.08);
+  --text-muted: #475569;
+  --text-sub: #94A3B8;
+  
+  --primary: #1C64F2;
+  --primary-hover: #1A56DB;
+  --correct: #0E9F6E;
+  --wrong: #E02424;
+  
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  
+  --streak-bg: #F3F4F6;
+  --logo-filter: none;
+  --nav-indicator-bg: rgba(0, 0, 0, 0.03);
+  
+  --bg-gradient: 
+    radial-gradient(circle at 50% -20%, rgba(28, 100, 242, 0.08), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(14, 159, 110, 0.03), transparent 35%);
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
+  overflow-x: hidden;
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── Glassmorphism ──────────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 30px var(--shadow-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card-hover {
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.glass-card-hover:hover {
+  background: var(--glass-bg);
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 10px 40px var(--shadow-color);
+  transform: translateY(-2px);
 }
 
 /* ── iOS Safe Area ───────────────────────────────────────────────────────── */
@@ -25,88 +104,112 @@ body {
   padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* ── 페이지 전환 ─────────────────────────────────────────────────────────── */
+/* ── Premium Easing & Spring Animations ─────────────────────────────────────── */
+.spring-active {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.spring-active:active {
+  transform: scale(0.96);
+}
+
+/* ── Page transition ─────────────────────────────────────────────────────── */
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-in {
-  animation: page-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: page-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ── 리스트 스태거 ───────────────────────────────────────────────────────── */
+/* ── Stagger List ────────────────────────────────────────────────────────── */
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .stagger > * {
-  animation: slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.stagger > *:nth-child(1)  { animation-delay: 40ms; }
-.stagger > *:nth-child(2)  { animation-delay: 80ms; }
-.stagger > *:nth-child(3)  { animation-delay: 120ms; }
-.stagger > *:nth-child(4)  { animation-delay: 160ms; }
-.stagger > *:nth-child(5)  { animation-delay: 200ms; }
-.stagger > *:nth-child(6)  { animation-delay: 240ms; }
-.stagger > *:nth-child(7)  { animation-delay: 280ms; }
-.stagger > *:nth-child(8)  { animation-delay: 320ms; }
-.stagger > *:nth-child(n+9) { animation-delay: 360ms; }
+.stagger > *:nth-child(1)  { animation-delay: 30ms; }
+.stagger > *:nth-child(2)  { animation-delay: 60ms; }
+.stagger > *:nth-child(3)  { animation-delay: 90ms; }
+.stagger > *:nth-child(4)  { animation-delay: 120ms; }
+.stagger > *:nth-child(5)  { animation-delay: 150ms; }
+.stagger > *:nth-child(6)  { animation-delay: 180ms; }
+.stagger > *:nth-child(7)  { animation-delay: 210ms; }
+.stagger > *:nth-child(n+8) { animation-delay: 240ms; }
 
-/* ── 카드 hover ──────────────────────────────────────────────────────────── */
-.card-lift {
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.18s ease;
-  will-change: transform;
+/* ── Flashcard 3D Card Flipping ───────────────────────────────────────────── */
+.card-perspective {
+  perspective: 1200px;
 }
-.card-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+.card-inner {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
 }
-.card-lift:active {
-  transform: scale(0.98);
-  transition-duration: 0.08s;
+.card-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back {
+  transform: rotateY(180deg);
 }
 
-/* ── 버튼 press ──────────────────────────────────────────────────────────── */
-.btn-press {
-  transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.15s ease;
-}
-.btn-press:active { transform: scale(0.95); }
-
-/* ── 플래시카드 전환 ──────────────────────────────────────────────────────── */
+/* Flashcard slide animations */
 @keyframes card-exit {
-  from { opacity: 1; transform: translateY(0)    scale(1); }
-  to   { opacity: 0; transform: translateY(-20px) scale(0.96); }
+  0% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-24px) scale(0.94) rotate(-1deg); }
 }
 @keyframes card-enter {
-  from { opacity: 0; transform: translateY(20px)  scale(0.96); }
-  to   { opacity: 1; transform: translateY(0)     scale(1); }
+  0% { opacity: 0; transform: translateY(24px) scale(0.94) rotate(1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
 }
-.card-exit  { animation: card-exit  0.14s cubic-bezier(0.4, 0, 1, 1)  forwards; }
-.card-enter { animation: card-enter 0.18s cubic-bezier(0, 0, 0.2, 1)  forwards; }
-
-/* ── 바 채우기 ───────────────────────────────────────────────────────────── */
-@keyframes bar-fill {
-  from { height: 0; opacity: 0; }
+.card-exit {
+  animation: card-exit 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
-.bar-fill { animation: bar-fill 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.card-enter {
+  animation: card-enter 0.22s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
 
-/* ── 숫자 등장 ───────────────────────────────────────────────────────────── */
+/* ── Pulse Timer Animation ───────────────────────────────────────────────── */
+@keyframes pulse-timer {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+.pulse-timer {
+  animation: pulse-timer 1s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Numbers Pop ──────────────────────────────────────────────────────────── */
 @keyframes num-pop {
-  0%   { opacity: 0; transform: scale(0.75); }
-  70%  { transform: scale(1.06); }
+  0%   { opacity: 0; transform: scale(0.85); }
+  75%  { transform: scale(1.04); }
   100% { opacity: 1; transform: scale(1); }
 }
-.num-pop { animation: num-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* ── 페이드인 ────────────────────────────────────────────────────────────── */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.num-pop {
+  animation: num-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.fade-in { animation: fade-in 0.3s ease both; }
 
-/* ── 스크롤바 숨김 ───────────────────────────────────────────────────────── */
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+/* ── Custom Switch & Checkboxes ────────────────────────────────────────────── */
+.toggle-dot {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+}
+
+/* ── Hide scrollbars ─────────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Skeleton Loading ────────────────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
