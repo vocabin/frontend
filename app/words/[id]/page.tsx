@@ -19,6 +19,9 @@ export default function WordSetDetailPage() {
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean] = useState("");
   const [bookmark, setBookmark] = useState<StudyBookmark | null>(null);
+  const [pendingDeleteWordId, setPendingDeleteWordId] = useState<number | null>(null);
+  const [showDeleteSetModal, setShowDeleteSetModal] = useState(false);
+  const [deleteSetLoading, setDeleteSetLoading] = useState(false);
 
   const load = useCallback(() => {
     Promise.all([
@@ -40,10 +43,21 @@ export default function WordSetDetailPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (wordId: number) => {
-    if (!confirm("이 단어를 삭제할까요?")) return;
+  const handleDeleteWord = async (wordId: number) => {
     try { await wordsApi.delete(wordId); } catch { /* ignore */ }
     setWords((prev) => prev.filter((w) => w.id !== wordId));
+    setPendingDeleteWordId(null);
+  };
+
+  const handleDeleteWordSet = async () => {
+    setDeleteSetLoading(true);
+    try {
+      await wordSetsApi.delete(wordSetId);
+      router.replace("/words");
+    } catch {
+      setDeleteSetLoading(false);
+      setShowDeleteSetModal(false);
+    }
   };
 
   const handleToggleSave = async () => {
@@ -93,14 +107,26 @@ export default function WordSetDetailPage() {
           onClick={handleToggleSave}
           disabled={saveLoading}
           className={`p-2.5 rounded-xl border transition-all spring-active cursor-pointer ${
-            isSaved 
-              ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" 
+            isSaved
+              ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20"
               : "text-muted bg-card border-border hover:text-foreground hover:border-primary/20"
           }`}
           title={isSaved ? "구독 해제" : "세트 구독 추가"}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
+        <button
+          onClick={() => setShowDeleteSetModal(true)}
+          className="p-2.5 rounded-xl border text-muted bg-card border-border hover:text-wrong hover:border-wrong/30 hover:bg-wrong/5 transition-all spring-active cursor-pointer"
+          title="세트 삭제"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
           </svg>
         </button>
       </div>
@@ -175,30 +201,48 @@ export default function WordSetDetailPage() {
               </div>
             </div>
             {/* 액션 버튼 */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 ml-4">
-              <button
-                onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
-                className="p-2 text-muted hover:text-foreground hover:bg-primary/[0.04] rounded-lg transition-all spring-active cursor-pointer"
-                title="수정"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => handleDelete(word.id)}
-                className="p-2 text-muted hover:text-wrong hover:bg-wrong/5 rounded-lg transition-all spring-active cursor-pointer"
-                title="삭제"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                  <path d="M10 11v6M14 11v6" />
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                </svg>
-              </button>
-            </div>
+            {pendingDeleteWordId === word.id ? (
+              <div className="flex items-center gap-2 shrink-0 ml-4 fade-in">
+                <span className="text-[11px] text-muted font-semibold">삭제할까요?</span>
+                <button
+                  onClick={() => setPendingDeleteWordId(null)}
+                  className="px-2.5 py-1 text-[11px] font-bold text-muted border border-border rounded-lg bg-card hover:bg-white/[0.06] transition-all spring-active"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={() => handleDeleteWord(word.id)}
+                  className="px-2.5 py-1 text-[11px] font-bold text-wrong border border-wrong/20 bg-wrong/5 rounded-lg hover:bg-wrong/10 transition-all spring-active"
+                >
+                  삭제
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 ml-4">
+                <button
+                  onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
+                  className="p-2 text-muted hover:text-foreground hover:bg-primary/[0.04] rounded-lg transition-all spring-active cursor-pointer"
+                  title="수정"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setPendingDeleteWordId(word.id)}
+                  className="p-2 text-muted hover:text-wrong hover:bg-wrong/5 rounded-lg transition-all spring-active cursor-pointer"
+                  title="삭제"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
@@ -211,6 +255,42 @@ export default function WordSetDetailPage() {
           </div>
         )}
       </div>
+
+      {/* 세트 삭제 확인 모달 */}
+      {showDeleteSetModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in">
+          <div className="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="w-12 h-12 bg-wrong/10 rounded-2xl flex items-center justify-center mb-4">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-wrong">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6M14 11v6" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+              </svg>
+            </div>
+            <p className="text-base font-extrabold text-foreground mb-1 tracking-tight">세트를 삭제할까요?</p>
+            <p className="text-xs text-muted mb-6 leading-relaxed">
+              <span className="font-bold text-foreground">{wordSet?.name}</span> 세트와 포함된 모든 단어, 학습 기록이 영구 삭제됩니다.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeleteSetModal(false)}
+                disabled={deleteSetLoading}
+                className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active bg-card"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteWordSet}
+                disabled={deleteSetLoading}
+                className="flex-1 py-3 text-sm font-bold bg-wrong text-white rounded-xl hover:opacity-90 shadow-lg shadow-wrong/10 transition-all spring-active"
+              >
+                {deleteSetLoading ? "삭제 중..." : "삭제"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 수정 모달 */}
       {editingWord && (
