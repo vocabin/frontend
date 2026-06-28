@@ -72,7 +72,7 @@ export default function BottomTabBar() {
   }, [activeIndex]);
 
   return (
-    <nav className="md:hidden fixed bottom-5 left-4 right-4 z-40 bg-slate-950/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-xl overflow-hidden">
+    <nav className="md:hidden fixed bottom-5 left-4 right-4 z-40 glass-card rounded-2xl shadow-xl overflow-hidden">
       <div ref={containerRef} className="flex relative py-2.5 px-2">
         {/* 슬라이딩 알약형 배경 인디케이터 */}
         {activeIndex >= 0 && (
@@ -96,13 +96,13 @@ export default function BottomTabBar() {
               href={item.href}
               ref={(el) => { tabRefs.current[i] = el; }}
               className={`flex-1 flex flex-col items-center gap-1.5 py-1.5 transition-all duration-200 active:scale-95 z-10 ${
-                isActive ? "text-primary font-semibold" : "text-slate-400 hover:text-slate-200"
+                isActive ? "text-primary font-semibold" : "text-muted hover:text-foreground"
               }`}
             >
               <span className={`transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
                 {item.icon(isActive)}
               </span>
-              <span className={`text-[10px] font-medium tracking-wide transition-colors duration-150 ${isActive ? "text-primary" : "text-slate-400"}`}>
+              <span className={`text-[10px] font-medium tracking-wide transition-colors duration-150 ${isActive ? "text-primary" : "text-muted"}`}>
                 {item.label}
               </span>
             </Link>

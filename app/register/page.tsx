@@ -37,7 +37,7 @@ export default function RegisterPage() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-[390px] z-10">
-        <div className="glass-card rounded-3xl p-8 shadow-2xl relative border-white/[0.04] bg-[#0E111E]/70">
+        <div className="glass-card rounded-3xl p-8 shadow-2xl relative">
           {/* 로고 */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-lg shadow-primary/20 p-2.5">
@@ -55,7 +55,7 @@ export default function RegisterPage() {
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="홍길동"
                 required
-                className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-sub focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
               />
             </div>
             <div>
@@ -66,7 +66,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
                 required
-                className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-sub focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
               />
             </div>
             <div>
@@ -77,7 +77,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="8자 이상 입력해주세요"
                 required
-                className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-sub focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all font-medium"
               />
             </div>
 
