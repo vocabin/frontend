@@ -258,8 +258,11 @@ export default function WordSetDetailPage() {
 
       {/* 세트 삭제 확인 모달 */}
       {showDeleteSetModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in">
-          <div className="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
+          onClick={() => !deleteSetLoading && setShowDeleteSetModal(false)}
+        >
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="w-12 h-12 bg-wrong/10 rounded-2xl flex items-center justify-center mb-4">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-wrong">
                 <polyline points="3 6 5 6 21 6" />
@@ -294,8 +297,11 @@ export default function WordSetDetailPage() {
 
       {/* 수정 모달 */}
       {editingWord && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in">
-          <div className="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
+          onClick={() => setEditingWord(null)}
+        >
+          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
             <div className="space-y-4">
               <div>
