@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { wordsApi, studyBookmarkApi, Word } from "@/lib/api";
 
 type AnimState = "idle" | "exit" | "enter";
 type LangMode = "en-ko" | "ko-en"; // front face language
 
-export default function SetFlashcardPage() {
+function SetFlashcardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const wordSetId = Number(searchParams.get("wordSetId"));
@@ -250,5 +250,17 @@ export default function SetFlashcardPage() {
         </button>
       )}
     </div>
+  );
+}
+
+export default function SetFlashcardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <SetFlashcardContent />
+    </Suspense>
   );
 }
