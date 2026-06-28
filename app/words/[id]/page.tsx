@@ -218,7 +218,7 @@ export default function WordSetDetailPage() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 ml-4">
+              <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity shrink-0 ml-4">
                 <button
                   onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
                   className="p-2 text-muted hover:text-foreground hover:bg-primary/[0.04] rounded-lg transition-all spring-active cursor-pointer"
