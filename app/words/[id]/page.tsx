@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { wordsApi, wordSetsApi, savedWordSetsApi, Word, WordSet } from "@/lib/api";
+import { wordsApi, wordSetsApi, savedWordSetsApi, studyBookmarkApi, Word, WordSet, StudyBookmark } from "@/lib/api";
 
 export default function WordSetDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,17 +18,20 @@ export default function WordSetDetailPage() {
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean] = useState("");
+  const [bookmark, setBookmark] = useState<StudyBookmark | null>(null);
 
   const load = useCallback(() => {
     Promise.all([
       wordSetsApi.getAll(),
       wordsApi.getByWordSet(wordSetId),
       savedWordSetsApi.isSaved(wordSetId).catch(() => ({ data: { saved: false } })),
-    ]).then(([setsRes, wordsRes, savedRes]) => {
+      studyBookmarkApi.get(wordSetId).catch(() => null),
+    ]).then(([setsRes, wordsRes, savedRes, bookmarkRes]) => {
       const found = setsRes.data.find((s) => s.id === wordSetId) ?? null;
       setWordSet(found);
       setWords(wordsRes.data);
       setIsSaved(savedRes.data.saved);
+      setBookmark(bookmarkRes ? bookmarkRes.data : null);
     }).catch(() => {
       setWordSet({ id: wordSetId, name: `세트 ${wordSetId}`, createdAt: "" });
       setWords([]);
@@ -116,7 +119,13 @@ export default function WordSetDetailPage() {
               <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">세트 집중 학습</p>
               <span className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all text-xs font-bold font-mono">→</span>
             </div>
-            <p className="text-[11px] text-muted mt-1 leading-relaxed">마지막 위치에서 바로 이어서 학습합니다.</p>
+            {bookmark && bookmark.wordIndex > 0 ? (
+              <p className="text-[11px] text-primary/80 mt-1 leading-relaxed font-semibold">
+                {bookmark.wordIndex + 1}번째 단어부터 이어서 학습
+              </p>
+            ) : (
+              <p className="text-[11px] text-muted mt-1 leading-relaxed">마지막 위치에서 바로 이어서 학습합니다.</p>
+            )}
           </div>
         </Link>
         <Link
