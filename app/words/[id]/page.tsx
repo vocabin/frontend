@@ -88,6 +88,7 @@ export default function WordSetDetailPage() {
   );
 
   return (
+    <>
     <div className="max-w-3xl mx-auto px-6 py-10 page-in">
       {/* 헤더 */}
       <div className="flex items-center gap-4 mb-8">
@@ -256,6 +257,8 @@ export default function WordSetDetailPage() {
         )}
       </div>
 
+    </div>
+
       {/* 세트 삭제 확인 모달 */}
       {showDeleteSetModal && (
         <div
@@ -338,6 +341,6 @@ export default function WordSetDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
