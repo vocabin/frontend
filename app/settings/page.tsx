@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { membersApi, settingsApi, authApi, autoImportApi, savedWordSetsApi, Member, Settings, AutoImportConfig, ImportHistory, SavedWordSet } from "@/lib/api";
 import { clearAccessToken } from "@/lib/auth";
 
