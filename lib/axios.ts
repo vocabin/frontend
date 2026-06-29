@@ -76,7 +76,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         clearAccessToken();
         processQueue(refreshError as AxiosError, null);
-        if (typeof window !== "undefined") {
+        if (process.env.NODE_ENV !== "development" && typeof window !== "undefined") {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);

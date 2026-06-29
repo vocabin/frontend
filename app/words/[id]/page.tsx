@@ -4,6 +4,17 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { wordsApi, wordSetsApi, savedWordSetsApi, studyBookmarkApi, Word, WordSet, StudyBookmark } from "@/lib/api";
+import Portal from "@/components/Portal";
+
+const DUMMY_WORDS: Word[] = [
+  { id: 1, english: "step into", korean: "~에 들어가다", wordSetId: 0 },
+  { id: 2, english: "sort through", korean: "~을 분류하다", wordSetId: 0 },
+  { id: 3, english: "inspect", korean: "v. 점검하다", wordSetId: 0 },
+  { id: 4, english: "remove", korean: "v. 벗다, 제거하다", wordSetId: 0 },
+  { id: 5, english: "board", korean: "v. 탑승하다", wordSetId: 0 },
+  { id: 6, english: "windowsill", korean: "n. 창턱", wordSetId: 0 },
+  { id: 7, english: "parking garage", korean: "주차장", wordSetId: 0 },
+];
 
 export default function WordSetDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +48,7 @@ export default function WordSetDetailPage() {
       setBookmark(bookmarkRes ? bookmarkRes.data : null);
     }).catch(() => {
       setWordSet({ id: wordSetId, name: `세트 ${wordSetId}`, createdAt: "" });
-      setWords([]);
+      setWords(DUMMY_WORDS.map((w) => ({ ...w, wordSetId })));
     }).finally(() => setLoading(false));
   }, [wordSetId]);
 
@@ -261,85 +272,89 @@ export default function WordSetDetailPage() {
 
       {/* 세트 삭제 확인 모달 */}
       {showDeleteSetModal && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
-          onClick={() => !deleteSetLoading && setShowDeleteSetModal(false)}
-        >
-          <div className="glass-card bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 bg-wrong/10 rounded-2xl flex items-center justify-center mb-4">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-wrong">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
-            </div>
-            <p className="text-base font-extrabold text-foreground mb-1 tracking-tight">세트를 삭제할까요?</p>
-            <p className="text-xs text-muted mb-6 leading-relaxed">
-              <span className="font-bold text-foreground">{wordSet?.name}</span> 세트와 포함된 모든 단어, 학습 기록이 영구 삭제됩니다.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowDeleteSetModal(false)}
-                disabled={deleteSetLoading}
-                className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active bg-card"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDeleteWordSet}
-                disabled={deleteSetLoading}
-                className="flex-1 py-3 text-sm font-bold bg-wrong text-white rounded-xl hover:opacity-90 shadow-lg shadow-wrong/10 transition-all spring-active"
-              >
-                {deleteSetLoading ? "삭제 중..." : "삭제"}
-              </button>
+        <Portal>
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
+            onClick={() => !deleteSetLoading && setShowDeleteSetModal(false)}
+          >
+            <div className="glass-card bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="w-12 h-12 bg-wrong/10 rounded-2xl flex items-center justify-center mb-4">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-wrong">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                </svg>
+              </div>
+              <p className="text-base font-extrabold text-foreground mb-1 tracking-tight">세트를 삭제할까요?</p>
+              <p className="text-xs text-muted mb-6 leading-relaxed">
+                <span className="font-bold text-foreground">{wordSet?.name}</span> 세트와 포함된 모든 단어, 학습 기록이 영구 삭제됩니다.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowDeleteSetModal(false)}
+                  disabled={deleteSetLoading}
+                  className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active bg-card"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleDeleteWordSet}
+                  disabled={deleteSetLoading}
+                  className="flex-1 py-3 text-sm font-bold bg-wrong text-white rounded-xl hover:opacity-90 shadow-lg shadow-wrong/10 transition-all spring-active"
+                >
+                  {deleteSetLoading ? "삭제 중..." : "삭제"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
 
       {/* 수정 모달 */}
       {editingWord && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
-          onClick={() => setEditingWord(null)}
-        >
-          <div className="glass-card bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">영단어 (English)</label>
-                <input
-                  value={editEnglish}
-                  onChange={(e) => setEditEnglish(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
-                />
+        <Portal>
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
+            onClick={() => setEditingWord(null)}
+          >
+            <div className="glass-card bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">영단어 (English)</label>
+                  <input
+                    value={editEnglish}
+                    onChange={(e) => setEditEnglish(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">한국어 뜻 (Korean)</label>
+                  <input
+                    value={editKorean}
+                    onChange={(e) => setEditKorean(e.target.value)}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">한국어 뜻 (Korean)</label>
-                <input
-                  value={editKorean}
-                  onChange={(e) => setEditKorean(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
-                />
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setEditingWord(null)}
+                  className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active bg-card"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  className="flex-1 py-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
+                >
+                  저장
+                </button>
               </div>
-            </div>
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => setEditingWord(null)}
-                className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active bg-card"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="flex-1 py-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
-              >
-                저장
-              </button>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </>
   );

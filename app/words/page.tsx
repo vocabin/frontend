@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { wordsApi, wordSetsApi, Word, WordSet } from "@/lib/api";
+import Portal from "@/components/Portal";
 
 export default function WordsPage() {
   const [wordSets, setWordSets] = useState<WordSet[]>([]);
@@ -177,43 +178,51 @@ export default function WordsPage() {
 
       {/* 수정 모달 */}
       {editingWord && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in">
-          <div className="glass-card border-white/[0.08] rounded-3xl p-6 w-full max-w-sm shadow-2xl bg-[#0E111E]">
-            <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">영단어 (English)</label>
-                <input
-                  value={editEnglish}
-                  onChange={(e) => setEditEnglish(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
-                />
+        <Portal>
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0 fade-in"
+            onClick={() => setEditingWord(null)}
+          >
+            <div 
+              className="glass-card border-white/[0.08] rounded-3xl p-6 w-full max-w-sm shadow-2xl bg-[#0E111E]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">영단어 (English)</label>
+                  <input
+                    value={editEnglish}
+                    onChange={(e) => setEditEnglish(e.target.value)}
+                    className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">한국어 뜻 (Korean)</label>
+                  <input
+                    value={editKorean}
+                    onChange={(e) => setEditKorean(e.target.value)}
+                    className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-400 mb-2 block tracking-wide">한국어 뜻 (Korean)</label>
-                <input
-                  value={editKorean}
-                  onChange={(e) => setEditKorean(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
-                />
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setEditingWord(null)}
+                  className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-200 border border-white/[0.08] rounded-xl transition-all spring-active"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  className="flex-1 py-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
+                >
+                  저장
+                </button>
               </div>
-            </div>
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => setEditingWord(null)}
-                className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-200 border border-white/[0.08] rounded-xl transition-all spring-active"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="flex-1 py-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
-              >
-                저장
-              </button>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );
