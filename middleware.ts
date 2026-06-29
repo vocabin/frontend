@@ -5,6 +5,11 @@ const PUBLIC_PATHS = ["/login", "/register"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 개발 환경에서는 로그인 없이 전체 페이지 접근 허용
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
