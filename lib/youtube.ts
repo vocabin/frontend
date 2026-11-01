@@ -57,5 +57,9 @@ export function parseMemoTimestamp(memo: string | null | undefined): MemoTimesta
 }
 
 export function listeningHref(videoId: string, seconds: number): string {
-  return `/study/listening?v=${videoId}&t=${Math.floor(seconds)}`;
+  return `/study/listening/${videoId}?t=${Math.floor(seconds)}`;
+}
+
+export function thumbnailUrl(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
 }
