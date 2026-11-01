@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { wordsApi, studyApi, settingsApi, Word } from "@/lib/api";
 import Portal from "@/components/Portal";
+import PocketAddModal from "@/components/PocketAddModal";
+import Toast from "@/components/Toast";
 
 const DUMMY_WORDS: Word[] = [
   { id: 1, english: "abandon",    korean: "포기하다, 버리다",    wordSetId: 1 },
@@ -30,6 +32,9 @@ export default function FlashcardPage() {
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean]   = useState("");
+  const [pocketWord, setPocketWord]   = useState<Word | null>(null);
+  const [toast, setToast]             = useState("");
+  const clearToast = useCallback(() => setToast(""), []);
 
   const loadWords = useCallback(() => {
     setLoading(true);
@@ -64,14 +69,14 @@ export default function FlashcardPage() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (editingWord) return;
+      if (editingWord || pocketWord) return;
       if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); setFlipped((f) => !f); }
       if (e.key === "ArrowRight" && flipped) goNext(true);
       if (e.key === "ArrowLeft"  && flipped) goNext(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [flipped, editingWord, goNext]);
+  }, [flipped, editingWord, pocketWord, goNext]);
 
   const handleEditSave = async () => {
     if (!editingWord) return;
@@ -194,6 +199,18 @@ export default function FlashcardPage() {
           {langMode === "en-ko" ? "EN → KO" : "KO → EN"}
         </button>
 
+        {/* 포켓 담기 버튼 */}
+        <button
+          onClick={() => setPocketWord(word)}
+          className="p-1.5 rounded-lg border border-white/[0.08] text-slate-500 hover:text-pocket transition-all spring-active"
+          title="포켓에 담기"
+          aria-label="포켓에 담기"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
+
         {/* 편집 버튼 */}
         <button
           onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
@@ -268,6 +285,17 @@ export default function FlashcardPage() {
           </button>
         )}
       </div>
+
+      {/* 포켓 담기 모달 */}
+      {pocketWord && (
+        <PocketAddModal
+          initialEnglish={pocketWord.english}
+          initialKorean={pocketWord.korean}
+          onClose={() => setPocketWord(null)}
+          onSaved={setToast}
+        />
+      )}
+      {toast && <Toast message={toast} onDone={clearToast} />}
 
       {/* 수정 모달 */}
       {editingWord && (
