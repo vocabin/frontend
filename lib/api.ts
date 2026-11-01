@@ -13,6 +13,7 @@ export interface Word {
   english: string;
   korean: string;
   wordSetId: number;
+  memo?: string | null;
 }
 
 export interface StatsSummary {
@@ -47,7 +48,7 @@ export interface WordSetProgress {
 export interface StudyRecord {
   wordId: number;
   correct: boolean;
-  mode: "FLASHCARD" | "SPEEDRUN" | "WEAK";
+  mode: "FLASHCARD" | "SPEEDRUN" | "WEAK" | "POCKET";
 }
 
 export interface Member {
@@ -128,6 +129,19 @@ export const wordsApi = {
     api.put<Word>(`/api/words/${wordId}`, { english, korean }),
 
   delete: (wordId: number) => api.delete(`/api/words/${wordId}`),
+};
+
+// ─── Pocket ───────────────────────────────────────────────────────────────────
+
+export const pocketApi = {
+  getAll: () => api.get<Word[]>("/api/pocket"),
+
+  getDue: () => api.get<Word[]>("/api/pocket/due"),
+
+  add: (english: string, korean: string, memo?: string) =>
+    api.post<Word>("/api/pocket", { english, korean, memo: memo || null }),
+
+  remove: (wordId: number) => api.delete(`/api/pocket/${wordId}`),
 };
 
 // ─── Study ────────────────────────────────────────────────────────────────────

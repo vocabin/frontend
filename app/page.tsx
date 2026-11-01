@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { statsApi, wordSetsApi, StatsSummary, WordSetProgress } from "@/lib/api";
+import { pocketApi, statsApi, wordSetsApi, StatsSummary, WordSetProgress } from "@/lib/api";
 
 function IconBook() {
   return (
@@ -50,6 +50,13 @@ export default function HomePage() {
   const [progress, setProgress] = useState<WordSetProgress[]>([]);
   const [summary, setSummary] = useState<StatsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pocketDue, setPocketDue] = useState<number | null>(null);
+
+  useEffect(() => {
+    pocketApi.getDue()
+      .then((res) => setPocketDue(res.data.length))
+      .catch(() => setPocketDue(null));
+  }, []);
 
   useEffect(() => {
     const failsafe = setTimeout(() => setLoading(false), 8000);
@@ -92,6 +99,9 @@ export default function HomePage() {
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">안녕하세요 👋</h1>
           <p className="text-slate-400 mt-2 text-sm font-medium">오늘도 꾸준하게 단어 복습을 이어가 볼까요?</p>
         </div>
+        <Link href="/stats" className="md:hidden text-xs font-bold text-primary px-3 py-2 rounded-xl bg-primary/10 spring-active">
+          통계 보기
+        </Link>
       </div>
 
       {/* 통계 요약 카드 */}
@@ -160,6 +170,48 @@ export default function HomePage() {
               </p>
               <p className="text-xs text-muted mt-1.5 leading-relaxed">
                 60초 동안 빠르고 격렬하게 단어 스펠링을 맞춰보세요.
+              </p>
+            </div>
+          </div>
+        </Link>
+        <Link
+          href="/study/pocket"
+          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-pocket/30 hover:bg-pocket/[0.02] group spring-active"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-pocket/10 flex items-center justify-center text-pocket text-xl transition-colors duration-300 group-hover:bg-pocket/20">
+              ★
+            </div>
+            <div>
+              <p className="text-base font-bold text-foreground tracking-tight flex items-center gap-1.5">
+                포켓
+                {pocketDue !== null && (
+                  <span className="text-[10px] bg-pocket/20 text-pocket px-1.5 py-0.5 rounded-full font-medium">
+                    {pocketDue > 0 ? `오늘 ${pocketDue}개` : "오늘 완료"}
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                담아둔 숙어와 단어를 못 외운 것부터 복습합니다.
+              </p>
+            </div>
+          </div>
+        </Link>
+        <Link
+          href="/study/listening"
+          className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/[0.02] group spring-active"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 transition-colors duration-300 group-hover:bg-emerald-500/20">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-base font-bold text-foreground tracking-tight">리스닝 노트</p>
+              <p className="text-xs text-muted mt-1.5 leading-relaxed">
+                유튜브를 들으며 모르는 표현을 바로 포켓에 담습니다.
               </p>
             </div>
           </div>
