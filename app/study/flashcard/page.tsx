@@ -305,7 +305,7 @@ export default function FlashcardPage() {
             onClick={() => setEditingWord(null)}
           >
             <div 
-              className="glass-card border-white/[0.08] rounded-3xl p-6 w-full max-w-sm shadow-2xl bg-[#0E111E]"
+              className="bg-card border border-border rounded-3xl p-6 w-full max-w-sm shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <p className="text-base font-extrabold text-foreground mb-4 tracking-tight">단어 정보 수정</p>
@@ -315,7 +315,7 @@ export default function FlashcardPage() {
                   <input
                     value={editEnglish}
                     onChange={(e) => setEditEnglish(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm font-mono text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
                 <div>
@@ -323,14 +323,14 @@ export default function FlashcardPage() {
                   <input
                     value={editKorean}
                     onChange={(e) => setEditKorean(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/30 transition-all"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
               </div>
               <div className="flex gap-2 mt-6">
                 <button
                   onClick={() => setEditingWord(null)}
-                  className="flex-1 py-3 text-sm font-bold text-slate-400 hover:text-slate-200 border border-white/[0.08] rounded-xl transition-all spring-active"
+                  className="flex-1 py-3 text-sm font-bold text-muted hover:text-foreground border border-border rounded-xl transition-all spring-active"
                 >
                   취소
                 </button>

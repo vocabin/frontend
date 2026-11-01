@@ -80,7 +80,10 @@ export default function BottomTabBar() {
   }, [activeIndex]);
 
   return (
-    <nav className="md:hidden fixed bottom-5 left-4 right-4 z-40 glass-card rounded-2xl shadow-xl overflow-hidden">
+    <nav
+      className="md:hidden fixed left-4 right-4 z-40 glass-card rounded-2xl shadow-xl overflow-hidden"
+      style={{ bottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }}
+    >
       <div ref={containerRef} className="flex relative py-2.5 px-2">
         {/* 슬라이딩 알약형 배경 인디케이터 */}
         {activeIndex >= 0 && (

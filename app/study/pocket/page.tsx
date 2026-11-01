@@ -6,6 +6,7 @@ import { pocketApi, settingsApi, studyApi, Word } from "@/lib/api";
 import { formatTime, listeningHref, parseMemoTimestamp } from "@/lib/youtube";
 import PocketAddModal from "@/components/PocketAddModal";
 import Toast from "@/components/Toast";
+import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 
 type Tab = "review" | "list";
 
@@ -117,7 +118,7 @@ export default function PocketPage() {
   const rate = total > 0 ? Math.round((results.correct / total) * 100) : 0;
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-10 page-in">
+    <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -126,20 +127,20 @@ export default function PocketPage() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-lg shadow-primary/10 transition-all spring-active"
+          className="h-11 px-4 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/10 transition-all spring-active"
         >
           + 추가
         </button>
       </div>
 
       {/* 탭 */}
-      <div className="grid grid-cols-2 gap-1 p-1 mb-8 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+      <div className="grid grid-cols-2 gap-1 p-1 mb-6 rounded-xl bg-background border border-border">
         {([["review", `오늘 복습 ${dueWords.length}`], ["list", `전체 목록 ${allWords.length}`]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`py-2.5 rounded-lg text-xs font-bold transition-all ${
-              tab === key ? "bg-primary/15 text-primary" : "text-slate-500 hover:text-slate-300"
+            className={`h-10 rounded-lg text-sm font-bold transition-all ${
+              tab === key ? "bg-card text-primary shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
             {label}
@@ -198,13 +199,13 @@ export default function PocketPage() {
               <div className="flex gap-3">
                 <button
                   onClick={load}
-                  className="flex-1 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-sm font-bold text-slate-300 hover:bg-white/[0.08] transition-all spring-active"
+                  className={`flex-1 h-12 rounded-xl text-sm font-bold ${secondaryButtonClass}`}
                 >
                   다시 불러오기
                 </button>
                 <Link
                   href="/"
-                  className="flex-1 py-3.5 text-center bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition-all spring-active"
+                  className="flex-1 h-12 flex items-center justify-center bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition-all spring-active"
                 >
                   홈으로
                 </Link>
@@ -226,7 +227,7 @@ export default function PocketPage() {
                 onClick={() => setFlipped((f) => !f)}
               >
                 <div className="card-inner relative w-full min-h-[280px] shadow-2xl" style={{ transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="card-face w-full min-h-[280px] glass-card rounded-3xl flex flex-col items-center justify-between px-8 py-10 bg-[#0F121F]/80">
+                  <div className="card-face w-full min-h-[280px] bg-card border border-border rounded-3xl flex flex-col items-center justify-between px-6 py-10">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">뜻을 떠올려보세요</p>
                     <p className="text-3xl font-extrabold text-foreground text-center leading-snug tracking-tight my-8">{word.english}</p>
                     <p className="text-[10px] font-semibold text-slate-500 opacity-60">카드를 탭하거나 Space키로 확인</p>
@@ -259,7 +260,7 @@ export default function PocketPage() {
                 ) : (
                   <button
                     onClick={() => setFlipped(true)}
-                    className="w-full py-4 bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] text-slate-300 font-bold text-sm rounded-2xl transition-all spring-active"
+                    className={`w-full h-14 font-bold text-sm rounded-2xl ${secondaryButtonClass}`}
                   >
                     정답 확인하기
                   </button>
@@ -276,7 +277,7 @@ export default function PocketPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="영어, 뜻, 메모로 검색"
-            className="w-full mb-4 bg-slate-950/60 border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary/80 transition-all"
+            className={`${fieldClass} mb-4`}
           />
           {filtered.length === 0 ? (
             <p className="text-center text-sm text-slate-500 py-12">
@@ -287,28 +288,28 @@ export default function PocketPage() {
               {filtered.map((w) => (
                 <li
                   key={w.id}
-                  className={`glass-card rounded-2xl p-4 flex items-start gap-3 ${w.id === flashId ? "pocket-flash" : ""}`}
+                  className={`bg-card border border-border rounded-2xl p-4 flex items-start gap-3 ${w.id === flashId ? "pocket-flash" : ""}`}
                 >
                   {/* notebook margin rule */}
                   <span aria-hidden className="self-stretch w-px bg-pocket/40" />
                   <div className="flex-1 min-w-0 space-y-1">
                     <p className="text-sm font-bold text-foreground break-words">{w.english}</p>
-                    <p className="text-xs text-slate-400 break-words">{w.korean}</p>
+                    <p className="text-xs text-muted break-words">{w.korean}</p>
                     <MemoView memo={w.memo} />
                   </div>
                   {confirmId === w.id ? (
                     <div className="flex gap-1 shrink-0">
-                      <button onClick={() => setConfirmId(null)} className="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 border border-white/[0.08] rounded-lg">
+                      <button onClick={() => setConfirmId(null)} className={`h-10 px-3 text-xs font-bold rounded-lg ${secondaryButtonClass}`}>
                         취소
                       </button>
-                      <button onClick={() => handleDelete(w.id)} className="px-2.5 py-1.5 text-[11px] font-bold text-white bg-wrong rounded-lg">
+                      <button onClick={() => handleDelete(w.id)} className="h-10 px-3 text-xs font-bold text-white bg-wrong rounded-lg spring-active">
                         삭제
                       </button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setConfirmId(w.id)}
-                      className="shrink-0 p-1.5 text-slate-500 hover:text-wrong transition-colors"
+                      className="shrink-0 w-11 h-11 -mr-2 -mt-2 flex items-center justify-center rounded-lg text-muted hover:text-wrong transition-colors"
                       aria-label="포켓에서 삭제"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

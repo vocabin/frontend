@@ -249,3 +249,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pocket-flash, .marker-pop { animation: none; }
 }
+
+/* iOS Safari zooms the page when focusing an input whose font is under 16px.
+   Kept outside Tailwind layers so it wins over text-sm on small screens. */
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}

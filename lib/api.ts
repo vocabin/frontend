@@ -144,6 +144,28 @@ export const pocketApi = {
   remove: (wordId: number) => api.delete(`/api/pocket/${wordId}`),
 };
 
+// ─── Listening ────────────────────────────────────────────────────────────────
+
+export interface ListeningVideo {
+  videoId: string;
+  title: string | null;
+  lastPositionSeconds: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const listeningApi = {
+  getAll: () => api.get<ListeningVideo[]>("/api/listening-videos"),
+
+  open: (videoId: string, title?: string | null) =>
+    api.put<ListeningVideo>(`/api/listening-videos/${videoId}`, { title: title ?? null }),
+
+  savePosition: (videoId: string, seconds: number) =>
+    api.patch<ListeningVideo>(`/api/listening-videos/${videoId}/position`, { seconds: Math.floor(seconds) }),
+
+  remove: (videoId: string) => api.delete(`/api/listening-videos/${videoId}`),
+};
+
 // ─── Study ────────────────────────────────────────────────────────────────────
 
 export const studyApi = {
