@@ -12,6 +12,7 @@ const TYPE_LABEL: Record<SuggestionType, string> = {
   PHRASAL_VERB: "구동사",
   EXPRESSION: "표현",
   GRAMMAR: "문법",
+  VOCABULARY: "단어",
 };
 
 const TYPE_CLASS: Record<SuggestionType, string> = {
@@ -19,6 +20,7 @@ const TYPE_CLASS: Record<SuggestionType, string> = {
   PHRASAL_VERB: "bg-primary/10 text-primary",
   EXPRESSION: "bg-correct/10 text-correct",
   GRAMMAR: "bg-violet-500/10 text-violet-500",
+  VOCABULARY: "bg-sky-500/10 text-sky-500",
 };
 
 interface Props {
