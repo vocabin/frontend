@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { pocketApi, statsApi, wordSetsApi, StatsSummary, WordSetProgress } from "@/lib/api";
+import { listeningApi, pocketApi, settingsApi, statsApi, wordSetsApi, ListeningVideo, StatsSummary, WordSetProgress } from "@/lib/api";
+import { formatTime, thumbnailUrl } from "@/lib/youtube";
 
 function IconBook() {
   return (
@@ -51,6 +52,17 @@ export default function HomePage() {
   const [summary, setSummary] = useState<StatsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [pocketDue, setPocketDue] = useState<number | null>(null);
+  const [dailyGoal, setDailyGoal] = useState<number | null>(null);
+  const [lastVideo, setLastVideo] = useState<ListeningVideo | null>(null);
+
+  useEffect(() => {
+    settingsApi.get()
+      .then((res) => setDailyGoal(res.data.dailyGoal ?? 20))
+      .catch(() => setDailyGoal(null));
+    listeningApi.getAll()
+      .then((res) => setLastVideo(res.data[0] ?? null))
+      .catch(() => setLastVideo(null));
+  }, []);
 
   useEffect(() => {
     pocketApi.getDue()
@@ -103,6 +115,35 @@ export default function HomePage() {
           통계 보기
         </Link>
       </div>
+
+      {/* 오늘 할 일: 고민 없이 순서대로 누르기만 하면 되는 한 장 */}
+      <section aria-labelledby="today-title" className="bg-card border border-border rounded-2xl p-4 sm:p-5 mb-8">
+        <h2 id="today-title" className="text-base font-bold text-foreground mb-3">오늘 할 일</h2>
+        <ol className="space-y-2">
+          <TodayStep
+            index={1}
+            href="/study/flashcard"
+            title="단어 복습"
+            description={dailyGoal ? `목표 ${dailyGoal}개 · 잊을 때쯤 다시 나와요` : "잊을 때쯤 다시 나오는 순서로 복습해요"}
+          />
+          <TodayStep
+            index={2}
+            href="/study/pocket"
+            title="포켓 복습"
+            description={pocketDue === null ? "담아둔 숙어와 단어를 복습해요" : pocketDue > 0 ? `${pocketDue}개가 기다리고 있어요` : "오늘 분량을 다 했어요"}
+            done={pocketDue === 0}
+          />
+          <TodayStep
+            index={3}
+            href={lastVideo ? `/study/listening/${lastVideo.videoId}` : "/study/listening"}
+            title={lastVideo ? "리스닝 이어보기" : "리스닝 노트"}
+            description={lastVideo
+              ? `${lastVideo.title ?? "최근 영상"}${lastVideo.lastPositionSeconds > 0 ? ` · ${formatTime(lastVideo.lastPositionSeconds)}부터` : ""}`
+              : "유튜브를 보며 모르는 표현을 담아요"}
+            thumbnail={lastVideo ? thumbnailUrl(lastVideo.videoId) : undefined}
+          />
+        </ol>
+      </section>
 
       {/* 통계 요약 카드 */}
       {summary && (
@@ -283,5 +324,44 @@ export default function HomePage() {
         )}
       </div>
     </div>
+  );
+}
+
+function TodayStep({ index, href, title, description, done = false, thumbnail }: {
+  index: number;
+  href: string;
+  title: string;
+  description: string;
+  done?: boolean;
+  thumbnail?: string;
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="flex items-center gap-3 min-h-14 px-3 py-2.5 rounded-xl bg-background active:bg-primary/[0.06] hover:bg-primary/[0.04] transition-colors"
+      >
+        {thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={thumbnail} alt="" className="w-14 aspect-video rounded-md object-cover shrink-0" />
+        ) : (
+          <span
+            aria-hidden
+            className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+              done ? "bg-correct text-white" : "bg-primary/10 text-primary"
+            }`}
+          >
+            {done ? "✓" : index}
+          </span>
+        )}
+        <span className="flex-1 min-w-0">
+          <span className={`block text-sm font-bold ${done ? "text-muted" : "text-foreground"}`}>{title}</span>
+          <span className="block text-xs text-muted truncate">{description}</span>
+        </span>
+        <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-sub shrink-0">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </Link>
+    </li>
   );
 }

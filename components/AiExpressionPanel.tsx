@@ -4,6 +4,7 @@ import { useState } from "react";
 import { aiApi, pocketApi, AiExplainResult, AiSuggestion, SuggestionType, Word } from "@/lib/api";
 import { buildTimestampLink, formatTime } from "@/lib/youtube";
 import { fieldClass, secondaryButtonClass } from "@/lib/ui";
+import { apiErrorMessage, errorStatus } from "@/lib/messages";
 
 const MAX_SENTENCE = 300;
 
@@ -32,18 +33,13 @@ interface Props {
 }
 
 function errorMessage(e: unknown): string {
-  const response = (e as { response?: { status?: number; data?: { message?: string } } }).response;
-  if (!response) {
-    return "응답이 늦어요. 같은 문장으로 다시 누르면 저장된 결과를 바로 불러와요";
-  }
-  switch (response.status) {
-    case 400: return response.data?.message ?? "문장을 확인해 주세요";
-    case 401: return "로그인이 만료됐어요. 다시 로그인해 주세요";
-    case 403: return "AI 기능이 꺼져 있는 계정이에요";
-    case 429: return "오늘 AI 사용 횟수를 다 썼어요. 내일 다시 쓸 수 있어요";
-    case 503: return "AI가 응답하지 않아요. 잠시 후 다시 시도해 주세요";
-    default:  return "표현을 뽑지 못했어요. 잠시 후 다시 시도해 주세요";
-  }
+  return apiErrorMessage(e, {
+    network: "응답이 늦어요. 같은 문장으로 다시 누르면 저장된 결과를 바로 불러와요",
+    400: "문장은 300자까지 입력할 수 있어요",
+    403: "AI 기능이 꺼져 있는 계정이에요",
+    429: "오늘 AI 사용 횟수를 다 썼어요. 내일 다시 쓸 수 있어요",
+    503: "AI가 응답하지 않아요. 잠시 후 다시 시도해 주세요",
+  });
 }
 
 // Example sentence + where it was heard, kept under the 500-char memo limit
@@ -120,7 +116,7 @@ export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, on
         added.push(res.data);
         finished.add(index);
       } catch (e) {
-        if ((e as { response?: { status?: number } }).response?.status === 409) {
+        if (errorStatus(e) === 409) {
           duplicates++;
           finished.add(index);
         }

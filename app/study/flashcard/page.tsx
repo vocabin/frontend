@@ -226,8 +226,12 @@ export default function FlashcardPage() {
 
       {/* 카드 */}
       <div
-        className={`card-perspective cursor-pointer mb-6 relative select-none ${cardAnimClass}`}
+        className={`card-perspective cursor-pointer mb-6 relative select-none rounded-3xl focus-visible:outline-2 focus-visible:outline-primary ${cardAnimClass}`}
+        role="button"
+        tabIndex={0}
+        aria-label={flipped ? "카드 앞면으로 돌리기" : "정답 보기"}
         onClick={() => animState === "idle" && setFlipped((f) => !f)}
+        onKeyDown={(e) => { if (e.key === "Enter" && animState === "idle") setFlipped((f) => !f); }}
       >
         <div
           className="card-inner relative w-full min-h-[300px] shadow-2xl"
@@ -256,6 +260,9 @@ export default function FlashcardPage() {
           </div>
         </div>
       </div>
+
+      {/* Screen readers hear the answer when the card flips */}
+      <p className="sr-only" aria-live="polite">{flipped ? `${backLabel}: ${backText}` : ""}</p>
 
       {/* O / X 버튼 및 뜻 보기 */}
       <div className="relative min-h-[72px]">

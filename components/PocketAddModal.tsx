@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { pocketApi, Word } from "@/lib/api";
 import Portal from "@/components/Portal";
+import { apiErrorMessage } from "@/lib/messages";
 
 interface Props {
   initialEnglish?: string;
@@ -33,8 +34,7 @@ export default function PocketAddModal({ initialEnglish = "", initialKorean = ""
       onSaved("포켓에 담았어요", res.data);
       onClose();
     } catch (e: unknown) {
-      const status = (e as { response?: { status?: number } }).response?.status;
-      setError(status === 409 ? "이미 포켓에 담긴 표현이에요" : "저장하지 못했어요. 잠시 후 다시 시도해 주세요");
+      setError(apiErrorMessage(e, { 409: "이미 포켓에 담긴 표현이에요" }));
       setSaving(false);
     }
   };

@@ -223,8 +223,12 @@ export default function PocketPage() {
 
               {/* 카드 */}
               <div
-                className="card-perspective cursor-pointer mb-6 select-none"
+                className="card-perspective cursor-pointer mb-6 select-none rounded-3xl focus-visible:outline-2 focus-visible:outline-primary"
+                role="button"
+                tabIndex={0}
+                aria-label={flipped ? "카드 앞면으로 돌리기" : "정답 보기"}
                 onClick={() => setFlipped((f) => !f)}
+                onKeyDown={(e) => { if (e.key === "Enter") setFlipped((f) => !f); }}
               >
                 <div className="card-inner relative w-full min-h-[280px] shadow-2xl" style={{ transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}>
                   <div className="card-face w-full min-h-[280px] bg-card border border-border rounded-3xl flex flex-col items-center justify-between px-6 py-10">
@@ -239,6 +243,9 @@ export default function PocketPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Screen readers hear the answer when the card flips */}
+              <p className="sr-only" aria-live="polite">{flipped ? `정답: ${word.korean}` : ""}</p>
 
               {/* O / X */}
               <div className="min-h-[72px]">
