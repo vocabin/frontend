@@ -168,7 +168,7 @@ export const listeningApi = {
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 
-export type SuggestionType = "IDIOM" | "PHRASAL_VERB" | "EXPRESSION" | "GRAMMAR";
+export type SuggestionType = "IDIOM" | "PHRASAL_VERB" | "EXPRESSION" | "GRAMMAR" | "VOCABULARY";
 
 export interface AiSuggestion {
   expression: string;
