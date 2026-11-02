@@ -8,6 +8,7 @@ import { buildTimestampLink, formatTime, parseMemoTimestamp, parseVideoId } from
 import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 import Toast from "@/components/Toast";
 import AiExpressionPanel from "@/components/AiExpressionPanel";
+import { apiErrorMessage } from "@/lib/messages";
 
 // ─── YouTube IFrame Player API (minimal typings) ──────────────────────────────
 
@@ -46,6 +47,8 @@ const PLAYING = 1;
 const PAUSED = 2;
 const RATES = [0.75, 1, 1.25];
 const POSITION_SAVE_INTERVAL = 15; // seconds of playback between resume-point saves
+// Same margin on both sides in landscape so the video stays centered (the notch/Dynamic Island is on one side only)
+const SAFE_SIDE = "max(env(safe-area-inset-left), env(safe-area-inset-right))";
 
 let apiPromise: Promise<YTNamespace> | null = null;
 
@@ -93,6 +96,7 @@ function ListeningVideoDetail() {
   const [flashId, setFlashId]   = useState<number | null>(null);
   const [toast, setToast]       = useState("");
   const [immersive, setImmersive] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const clearToast = useCallback(() => setToast(""), []);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -272,8 +276,7 @@ function ListeningVideoDetail() {
         playerRef.current?.playVideo();
       }
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status;
-      setFormError(status === 409 ? "이미 포켓에 담긴 표현이에요" : "저장하지 못했어요. 잠시 후 다시 시도해 주세요");
+      setFormError(apiErrorMessage(err, { 409: "이미 포켓에 담긴 표현이에요" }));
     } finally {
       setSaving(false);
     }
@@ -309,8 +312,17 @@ function ListeningVideoDetail() {
       {/* 영상 + 컨트롤: 스크롤하거나 키보드가 올라와도 상단에 고정 */}
       <div className={`sticky top-0 bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "z-[60]" : "z-20"}`}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
-        <div className={immersive ? "fixed inset-0 z-[60] bg-black" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}>
-          <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
+        <div
+          className={immersive ? "fixed inset-0 z-[60] bg-black flex items-center justify-center" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}
+          style={immersive ? { paddingLeft: SAFE_SIDE, paddingRight: SAFE_SIDE } : undefined}
+        >
+          {/* Landscape: an exact 16:9 box, centered between equal side margins so the Dynamic Island never pushes it off-center */}
+          <div
+            className={immersive ? "relative aspect-video" : "absolute inset-0"}
+            style={immersive ? { width: "min(100%, calc(100dvh * 16 / 9))" } : undefined}
+          >
+            <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
+          </div>
           {immersive && (
             <button
               type="button"
@@ -413,10 +425,23 @@ function ListeningVideoDetail() {
           onToast={setToast}
         />
 
-        {/* 표현 담기 */}
+        {/* 직접 입력: 뜻까지 알고 있을 때만 쓰도록 접어 둔다 */}
+        {!manualOpen ? (
+          <button
+            type="button"
+            onClick={() => setManualOpen(true)}
+            aria-expanded={false}
+            className="w-full h-12 mt-2 rounded-2xl border border-dashed border-border text-sm font-bold text-muted hover:text-foreground transition-colors"
+          >
+            + 뜻을 알면 직접 입력하기
+          </button>
+        ) : (
         <form onSubmit={handleSave} className="bg-card border border-border rounded-2xl p-4 mt-2 space-y-2.5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-foreground"><span className="text-pocket">★</span> 표현 담기</p>
+            <div className="flex items-center gap-1">
+              <p className="text-sm font-bold text-foreground"><span className="text-pocket">★</span> 직접 입력</p>
+              <button type="button" onClick={() => setManualOpen(false)} aria-expanded={true} className="h-8 px-2 text-xs font-bold text-sub">접기</button>
+            </div>
             {capturedAt !== null && (
               <div className="flex items-center gap-1 text-xs">
                 <span className="font-bold text-pocket tabular-nums">⏱ {formatTime(capturedAt)}</span>
@@ -466,6 +491,7 @@ function ListeningVideoDetail() {
             {saving ? "담는 중…" : "포켓에 담기"}
           </button>
         </form>
+        )}
 
         {/* 이 영상에서 담은 표현 */}
         <div className="mt-6">
