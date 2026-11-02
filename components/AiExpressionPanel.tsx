@@ -31,8 +31,12 @@ interface Props {
 
 function errorMessage(e: unknown): string {
   const response = (e as { response?: { status?: number; data?: { message?: string } } }).response;
-  switch (response?.status) {
+  if (!response) {
+    return "응답이 늦어요. 같은 문장으로 다시 누르면 저장된 결과를 바로 불러와요";
+  }
+  switch (response.status) {
     case 400: return response.data?.message ?? "문장을 확인해 주세요";
+    case 401: return "로그인이 만료됐어요. 다시 로그인해 주세요";
     case 403: return "AI 기능이 꺼져 있는 계정이에요";
     case 429: return "오늘 AI 사용 횟수를 다 썼어요. 내일 다시 쓸 수 있어요";
     case 503: return "AI가 응답하지 않아요. 잠시 후 다시 시도해 주세요";
@@ -174,7 +178,7 @@ export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, on
         disabled={!sentence.trim() || loading}
         className="w-full h-12 mt-3 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary-hover transition-colors spring-active disabled:opacity-40"
       >
-        {loading ? "표현을 고르는 중…" : result ? "다시 뽑기" : "표현 뽑기"}
+        {loading ? "표현을 고르는 중… (최대 30초)" : result ? "다시 뽑기" : "표현 뽑기"}
       </button>
 
       {result && (
