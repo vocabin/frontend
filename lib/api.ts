@@ -186,7 +186,9 @@ export interface AiExplainResult {
 }
 
 export const aiApi = {
-  explain: (sentence: string) => api.post<AiExplainResult>("/api/ai/expressions", { sentence }),
+  // The server waits up to 30s for the model, so this request needs more than the default 10s
+  explain: (sentence: string) =>
+    api.post<AiExplainResult>("/api/ai/expressions", { sentence }, { timeout: 45_000 }),
 };
 
 // ─── Study ────────────────────────────────────────────────────────────────────
