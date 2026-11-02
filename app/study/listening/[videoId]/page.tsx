@@ -7,6 +7,7 @@ import { listeningApi, pocketApi, Word } from "@/lib/api";
 import { buildTimestampLink, formatTime, parseMemoTimestamp, parseVideoId } from "@/lib/youtube";
 import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 import Toast from "@/components/Toast";
+import AiExpressionPanel from "@/components/AiExpressionPanel";
 
 // ─── YouTube IFrame Player API (minimal typings) ──────────────────────────────
 
@@ -91,6 +92,7 @@ function ListeningVideoDetail() {
   const [saved, setSaved]       = useState<Word[]>([]);
   const [flashId, setFlashId]   = useState<number | null>(null);
   const [toast, setToast]       = useState("");
+  const [immersive, setImmersive] = useState(false);
   const clearToast = useCallback(() => setToast(""), []);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -137,7 +139,8 @@ function ListeningVideoDetail() {
       lastSavedPositionRef.current = startAt;
       playerRef.current = new YT.Player(target, {
         videoId,
-        playerVars: { playsinline: 1, rel: 0, start: Math.floor(startAt) },
+        // fs: 0 hides YouTube's fullscreen button — on iPhone it switches to the native player, which drops captions
+        playerVars: { playsinline: 1, rel: 0, fs: 0, start: Math.floor(startAt) },
         events: {
           onReady: () => {
             setReady(true);
@@ -184,7 +187,40 @@ function ListeningVideoDetail() {
     return () => clearInterval(timer);
   }, [ready, savePosition]);
 
+  // Rotating the phone to landscape fills the screen with our own player, so YouTube captions stay visible
+  useEffect(() => {
+    const landscape = window.matchMedia("(orientation: landscape) and (max-height: 500px)");
+    const sync = () => setImmersive(landscape.matches);
+    sync();
+    landscape.addEventListener("change", sync);
+    return () => landscape.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!immersive) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [immersive]);
+
   const currentTime = () => playerRef.current?.getCurrentTime() ?? 0;
+
+  // AI panel: pause like the manual form and report where the sentence was heard
+  const pauseAndGetTime = (): number | null => {
+    const player = playerRef.current;
+    if (!player || !ready) return null;
+    if (player.getPlayerState() === PLAYING) {
+      resumeAfterSaveRef.current = true;
+      player.pauseVideo();
+    }
+    return currentTime();
+  };
+
+  const resumeIfPaused = () => {
+    if (!resumeAfterSaveRef.current) return;
+    resumeAfterSaveRef.current = false;
+    playerRef.current?.playVideo();
+  };
 
   // Tapping a field pauses the video and remembers where the expression was heard
   const handleCaptureFocus = () => {
@@ -271,9 +307,20 @@ function ListeningVideoDetail() {
       </div>
 
       {/* 영상 + 컨트롤: 스크롤하거나 키보드가 올라와도 상단에 고정 */}
-      <div className="sticky top-0 z-20 bg-background pb-2 pt-[env(safe-area-inset-top)]">
-        <div className="relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden">
+      <div className={`sticky top-0 bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "z-[60]" : "z-20"}`}>
+        {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
+        <div className={immersive ? "fixed inset-0 z-[60] bg-black" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}>
           <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
+          {immersive && (
+            <button
+              type="button"
+              onClick={() => setImmersive(false)}
+              className="absolute z-10 h-10 px-3 rounded-full bg-black/60 text-white text-xs font-bold backdrop-blur"
+              style={{ top: "calc(env(safe-area-inset-top) + 8px)", left: "calc(env(safe-area-inset-left) + 8px)" }}
+            >
+              ✕ 작게 보기
+            </button>
+          )}
         </div>
 
         {playerError ? (
@@ -291,6 +338,18 @@ function ListeningVideoDetail() {
               </button>
               <button onClick={togglePlay} disabled={!ready} className="h-11 px-5 rounded-xl text-sm font-bold text-white bg-primary disabled:opacity-40 spring-active">
                 {playing ? "일시정지" : "재생"}
+              </button>
+              <button
+                onClick={() => setImmersive(true)}
+                disabled={!ready}
+                aria-label="크게 보기 (자막 유지)"
+                title="크게 보기"
+                className={`w-11 h-11 shrink-0 rounded-xl flex items-center justify-center ${secondaryButtonClass}`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
               </button>
               <div className="ml-auto flex h-11 rounded-xl bg-card border border-border p-1" role="group" aria-label="재생 속도">
                 {RATES.map((r) => (
@@ -343,6 +402,17 @@ function ListeningVideoDetail() {
       </div>
 
       <div className="px-4 sm:px-0 pb-6">
+        <AiExpressionPanel
+          videoId={videoId}
+          pauseAndGetTime={pauseAndGetTime}
+          resume={resumeIfPaused}
+          onSaved={(words) => {
+            setSaved((list) => [...words, ...list]);
+            setFlashId(words[0]?.id ?? null);
+          }}
+          onToast={setToast}
+        />
+
         {/* 표현 담기 */}
         <form onSubmit={handleSave} className="bg-card border border-border rounded-2xl p-4 mt-2 space-y-2.5">
           <div className="flex items-center justify-between">

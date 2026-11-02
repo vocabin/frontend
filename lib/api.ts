@@ -166,6 +166,29 @@ export const listeningApi = {
   remove: (videoId: string) => api.delete(`/api/listening-videos/${videoId}`),
 };
 
+// ─── AI ───────────────────────────────────────────────────────────────────────
+
+export type SuggestionType = "IDIOM" | "PHRASAL_VERB" | "EXPRESSION" | "GRAMMAR";
+
+export interface AiSuggestion {
+  expression: string;
+  meaningKo: string;
+  exampleEn: string;
+  exampleKo: string;
+  type: SuggestionType;
+}
+
+export interface AiExplainResult {
+  sentence: string;
+  suggestions: AiSuggestion[];
+  cached: boolean;
+  remainingToday: number;
+}
+
+export const aiApi = {
+  explain: (sentence: string) => api.post<AiExplainResult>("/api/ai/expressions", { sentence }),
+};
+
 // ─── Study ────────────────────────────────────────────────────────────────────
 
 export const studyApi = {
