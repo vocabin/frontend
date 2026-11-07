@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { wordsApi, studyBookmarkApi, Word } from "@/lib/api";
+import { useLangMode } from "@/lib/useLangMode";
 
 type AnimState = "idle" | "exit" | "enter";
-type LangMode = "en-ko" | "ko-en";
 
 function SetFlashcardContent() {
   const router = useRouter();
@@ -19,7 +19,7 @@ function SetFlashcardContent() {
   const [finished, setFinished] = useState(false);
   const [results, setResults] = useState({ correct: 0, wrong: 0 });
   const [animState, setAnimState] = useState<AnimState>("idle");
-  const [langMode, setLangMode] = useState<LangMode>("en-ko");
+  const [langMode, toggleLangMode] = useLangMode();
   const [isRandom, setIsRandom] = useState(false);
   const originalWords = useRef<Word[]>([]);
 
@@ -236,7 +236,7 @@ function SetFlashcardContent() {
 
         {/* 언어 토글 */}
         <button
-          onClick={() => { setLangMode((m) => m === "en-ko" ? "ko-en" : "en-ko"); setFlipped(false); }}
+          onClick={() => { toggleLangMode(); setFlipped(false); }}
           className="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-white/[0.08] bg-white/[0.02] text-slate-400 hover:text-slate-200 hover:border-white/[0.15] transition-all spring-active"
         >
           {langMode === "en-ko" ? "EN → KO" : "KO → EN"}
