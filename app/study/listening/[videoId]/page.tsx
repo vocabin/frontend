@@ -355,7 +355,8 @@ function ListeningVideoDetail() {
       </div>
 
       {/* 영상 + 컨트롤: 스크롤하거나 키보드가 올라와도 상단에 고정 */}
-      <div className={`sticky top-0 bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "z-[60]" : "z-20"}`}>
+      {/* iOS Safari positions a position:fixed child relative to a sticky ancestor, so sticky is dropped in landscape mode */}
+      <div className={`bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "relative z-[60]" : "sticky top-0 z-20"}`}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
         <div
           ref={stageRef}
