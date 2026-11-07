@@ -79,6 +79,7 @@ function ListeningVideoDetail() {
   const params = useParams<{ videoId: string }>();
   const searchParams = useSearchParams();
   const videoId = parseVideoId(params.videoId ?? "");
+  const debugLayout = searchParams.get("debug") === "1";
 
   const [title, setTitle]       = useState<string | null>(null);
   const [startAt, setStartAt]   = useState<number | null>(null);
@@ -101,9 +102,13 @@ function ListeningVideoDetail() {
   const [immersive, setImmersive] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [layoutInfo, setLayoutInfo] = useState("");
   const clearToast = useCallback(() => setToast(""), []);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const insetProbeRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const resumeAfterSaveRef = useRef(false);
   const lastSavedPositionRef = useRef(0);
@@ -217,6 +222,31 @@ function ListeningVideoDetail() {
     return () => clearTimeout(timer);
   }, [overlayVisible, playing]);
 
+  // ?debug=1 only: shows the real geometry in landscape so layout offsets can be diagnosed on the device
+  useEffect(() => {
+    if (!debugLayout || !immersive) return;
+    const rect = (el: Element | null | undefined) => {
+      if (!el) return "-";
+      const r = el.getBoundingClientRect();
+      return `x${Math.round(r.left)} w${Math.round(r.width)} h${Math.round(r.height)}`;
+    };
+    const measure = () => {
+      const probe = insetProbeRef.current ? getComputedStyle(insetProbeRef.current) : null;
+      const vv = window.visualViewport;
+      setLayoutInfo([
+        `inner ${window.innerWidth}x${window.innerHeight} client ${document.documentElement.clientWidth} scrollX ${Math.round(window.scrollX)}`,
+        `vv ${vv ? `${Math.round(vv.width)}x${Math.round(vv.height)} off${Math.round(vv.offsetLeft)},${Math.round(vv.offsetTop)} s${vv.scale.toFixed(2)}` : "-"}`,
+        `safe L${probe?.paddingLeft} R${probe?.paddingRight} T${probe?.paddingTop} B${probe?.paddingBottom}`,
+        `stage ${rect(stageRef.current)}`,
+        `box ${rect(boxRef.current)}`,
+        `iframe ${rect(wrapperRef.current?.querySelector("iframe"))}`,
+      ].join("\n"));
+    };
+    measure();
+    const timer = setInterval(measure, 1000);
+    return () => clearInterval(timer);
+  }, [debugLayout, immersive]);
+
   const currentTime = () => playerRef.current?.getCurrentTime() ?? 0;
 
   // AI panel: pause like the manual form and report where the sentence was heard
@@ -328,16 +358,36 @@ function ListeningVideoDetail() {
       <div className={`sticky top-0 bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "z-[60]" : "z-20"}`}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
         <div
+          ref={stageRef}
           className={immersive ? "fixed inset-0 z-[60] bg-black flex items-center justify-center" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}
           style={immersive ? { paddingLeft: SAFE_SIDE, paddingRight: SAFE_SIDE } : undefined}
         >
           {/* Landscape: an exact 16:9 box, centered between equal side margins so the Dynamic Island never pushes it off-center */}
           <div
+            ref={boxRef}
             className={immersive ? "relative aspect-video" : "absolute inset-0"}
             style={immersive ? { width: "min(100%, calc(100dvh * 16 / 9))" } : undefined}
           >
             <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
           </div>
+          {immersive && debugLayout && (
+            <>
+              <div
+                ref={insetProbeRef}
+                aria-hidden
+                className="absolute invisible"
+                style={{
+                  paddingLeft: "env(safe-area-inset-left)",
+                  paddingRight: "env(safe-area-inset-right)",
+                  paddingTop: "env(safe-area-inset-top)",
+                  paddingBottom: "env(safe-area-inset-bottom)",
+                }}
+              />
+              <pre className="absolute z-20 top-2 right-2 max-w-[60%] p-2 rounded bg-black/80 text-[10px] leading-tight text-lime-300 whitespace-pre-wrap pointer-events-none">
+                {layoutInfo || "measuring…"}
+              </pre>
+            </>
+          )}
           {immersive && (
             <>
               {/* Tap layer: keeps YouTube's own pause button/progress bar from popping up over the captions */}
