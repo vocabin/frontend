@@ -7,6 +7,7 @@ import { formatTime, listeningHref, parseMemoTimestamp } from "@/lib/youtube";
 import PocketAddModal from "@/components/PocketAddModal";
 import Toast from "@/components/Toast";
 import { fieldClass, secondaryButtonClass } from "@/lib/ui";
+import { useLangMode } from "@/lib/useLangMode";
 
 type Tab = "review" | "list";
 
@@ -46,6 +47,7 @@ export default function PocketPage() {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [toast, setToast]         = useState("");
   const [flashId, setFlashId]     = useState<number | null>(null);
+  const [langMode, toggleLangMode] = useLangMode();
   const clearToast = useCallback(() => setToast(""), []);
 
   const load = useCallback(() => {
@@ -215,10 +217,17 @@ export default function PocketPage() {
             <div className="fade-in">
               {/* 진행률 */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
                   <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${(index / dueWords.length) * 100}%` }} />
                 </div>
-                <span className="text-xs font-bold text-slate-500 tabular-nums">{index + 1} / {dueWords.length}</span>
+                <span className="text-xs font-bold text-muted tabular-nums">{index + 1} / {dueWords.length}</span>
+                <button
+                  onClick={() => { toggleLangMode(); setFlipped(false); }}
+                  aria-label={langMode === "ko-en" ? "영어 보고 뜻 맞추기로 바꾸기" : "뜻 보고 영어 맞추기로 바꾸기"}
+                  className={`h-9 px-3 text-[11px] font-bold rounded-lg ${secondaryButtonClass}`}
+                >
+                  {langMode === "ko-en" ? "KO → EN" : "EN → KO"}
+                </button>
               </div>
 
               {/* 카드 */}
@@ -232,20 +241,26 @@ export default function PocketPage() {
               >
                 <div className="card-inner relative w-full min-h-[280px] shadow-2xl" style={{ transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}>
                   <div className="card-face w-full min-h-[280px] bg-card border border-border rounded-3xl flex flex-col items-center justify-between px-6 py-10">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">뜻을 떠올려보세요</p>
-                    <p className="text-3xl font-extrabold text-foreground text-center leading-snug tracking-tight my-8">{word.english}</p>
-                    <p className="text-[10px] font-semibold text-slate-500 opacity-60">카드를 탭하거나 Space키로 확인</p>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest">
+                      {langMode === "ko-en" ? "영어로 떠올려보세요" : "뜻을 떠올려보세요"}
+                    </p>
+                    <p className={`${langMode === "ko-en" ? "text-2xl" : "text-3xl"} font-extrabold text-foreground text-center leading-snug tracking-tight my-8 break-words`}>
+                      {langMode === "ko-en" ? word.korean : word.english}
+                    </p>
+                    <p className="text-[10px] font-semibold text-muted">카드를 탭해서 정답 확인</p>
                   </div>
                   <div className="card-face card-back w-full min-h-[280px] bg-gradient-to-br from-primary to-blue-600 rounded-3xl flex flex-col items-center justify-between px-8 py-10 absolute top-0 left-0">
                     <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest">정답</p>
-                    <p className="text-2xl font-extrabold text-white text-center leading-snug tracking-tight my-6">{word.korean}</p>
+                    <p className={`${langMode === "ko-en" ? "text-3xl" : "text-2xl"} font-extrabold text-white text-center leading-snug tracking-tight my-6 break-words`}>
+                      {langMode === "ko-en" ? word.english : word.korean}
+                    </p>
                     <MemoView memo={word.memo} light />
                   </div>
                 </div>
               </div>
 
               {/* Screen readers hear the answer when the card flips */}
-              <p className="sr-only" aria-live="polite">{flipped ? `정답: ${word.korean}` : ""}</p>
+              <p className="sr-only" aria-live="polite">{flipped ? `정답: ${langMode === "ko-en" ? word.english : word.korean}` : ""}</p>
 
               {/* O / X */}
               <div className="min-h-[72px]">

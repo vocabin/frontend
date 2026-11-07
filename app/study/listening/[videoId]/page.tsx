@@ -49,6 +49,9 @@ const RATES = [0.75, 1, 1.25];
 const POSITION_SAVE_INTERVAL = 15; // seconds of playback between resume-point saves
 // Same margin on both sides in landscape so the video stays centered (the notch/Dynamic Island is on one side only)
 const SAFE_SIDE = "max(env(safe-area-inset-left), env(safe-area-inset-right))";
+const OVERLAY_HIDE_MS = 2500;
+const OVERLAY_BUTTON =
+  "pointer-events-auto rounded-full bg-black/55 text-white font-bold backdrop-blur flex items-center justify-center active:scale-95 transition-transform";
 
 let apiPromise: Promise<YTNamespace> | null = null;
 
@@ -97,6 +100,7 @@ function ListeningVideoDetail() {
   const [toast, setToast]       = useState("");
   const [immersive, setImmersive] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [overlayVisible, setOverlayVisible] = useState(false);
   const clearToast = useCallback(() => setToast(""), []);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -207,6 +211,12 @@ function ListeningVideoDetail() {
     return () => { document.body.style.overflow = previous; };
   }, [immersive]);
 
+  useEffect(() => {
+    if (!overlayVisible || !playing) return;
+    const timer = setTimeout(() => setOverlayVisible(false), OVERLAY_HIDE_MS);
+    return () => clearTimeout(timer);
+  }, [overlayVisible, playing]);
+
   const currentTime = () => playerRef.current?.getCurrentTime() ?? 0;
 
   // AI panel: pause like the manual form and report where the sentence was heard
@@ -238,6 +248,11 @@ function ListeningVideoDetail() {
   };
 
   const rewind = () => playerRef.current?.seekTo(Math.max(0, currentTime() - 5), true);
+  const forward = () => {
+    const player = playerRef.current;
+    if (!player) return;
+    player.seekTo(Math.min(player.getDuration() || Infinity, currentTime() + 5), true);
+  };
 
   const togglePlay = () => {
     const player = playerRef.current;
@@ -324,14 +339,37 @@ function ListeningVideoDetail() {
             <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
           </div>
           {immersive && (
-            <button
-              type="button"
-              onClick={() => setImmersive(false)}
-              className="absolute z-10 h-10 px-3 rounded-full bg-black/60 text-white text-xs font-bold backdrop-blur"
-              style={{ top: "calc(env(safe-area-inset-top) + 8px)", left: "calc(env(safe-area-inset-left) + 8px)" }}
-            >
-              ✕ 작게 보기
-            </button>
+            <>
+              {/* Tap layer: keeps YouTube's own pause button/progress bar from popping up over the captions */}
+              <div
+                className="absolute inset-0 z-[5]"
+                onClick={() => setOverlayVisible((v) => !v)}
+                aria-hidden
+              />
+              {(overlayVisible || !playing) && (
+                <div className="absolute inset-0 z-10 pointer-events-none fade-in">
+                  <button
+                    type="button"
+                    onClick={() => { setImmersive(false); setOverlayVisible(false); }}
+                    className="pointer-events-auto absolute h-11 px-4 rounded-full bg-black/60 text-white text-sm font-bold backdrop-blur"
+                    style={{ top: "calc(env(safe-area-inset-top) + 8px)", left: "calc(env(safe-area-inset-left) + 8px)" }}
+                  >
+                    ✕ 작게 보기
+                  </button>
+                  <div className="absolute inset-0 flex items-center justify-center gap-8">
+                    <button type="button" aria-label="5초 뒤로" onClick={() => { rewind(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-16 h-16 text-base`}>
+                      ↺ 5
+                    </button>
+                    <button type="button" aria-label={playing ? "일시정지" : "재생"} onClick={() => { togglePlay(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-20 h-20 text-2xl`}>
+                      {playing ? "❚❚" : "▶"}
+                    </button>
+                    <button type="button" aria-label="5초 앞으로" onClick={() => { forward(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-16 h-16 text-base`}>
+                      5 ↻
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

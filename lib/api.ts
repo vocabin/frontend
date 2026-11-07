@@ -170,12 +170,17 @@ export const listeningApi = {
 
 export type SuggestionType = "IDIOM" | "PHRASAL_VERB" | "EXPRESSION" | "GRAMMAR" | "VOCABULARY";
 
-export interface AiSuggestion {
-  expression: string;
+export interface AiMeaning {
   meaningKo: string;
   exampleEn: string;
   exampleKo: string;
+  fromSentence: boolean; // true: the meaning used in the sentence the learner typed (that sentence is the example)
+}
+
+export interface AiSuggestion {
+  expression: string;
   type: SuggestionType;
+  meanings: AiMeaning[];
 }
 
 export interface AiExplainResult {

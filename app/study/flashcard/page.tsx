@@ -6,6 +6,7 @@ import { wordsApi, studyApi, settingsApi, Word } from "@/lib/api";
 import Portal from "@/components/Portal";
 import PocketAddModal from "@/components/PocketAddModal";
 import Toast from "@/components/Toast";
+import { useLangMode } from "@/lib/useLangMode";
 
 const DUMMY_WORDS: Word[] = [
   { id: 1, english: "abandon",    korean: "포기하다, 버리다",    wordSetId: 1 },
@@ -16,7 +17,6 @@ const DUMMY_WORDS: Word[] = [
 ];
 
 type AnimState = "idle" | "exit" | "enter";
-type LangMode = "en-ko" | "ko-en";
 
 export default function FlashcardPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function FlashcardPage() {
   const [finished, setFinished]   = useState(false);
   const [results, setResults]     = useState({ correct: 0, wrong: 0 });
   const [animState, setAnimState] = useState<AnimState>("idle");
-  const [langMode, setLangMode]   = useState<LangMode>("en-ko");
+  const [langMode, toggleLangMode] = useLangMode();
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean]   = useState("");
@@ -193,7 +193,7 @@ export default function FlashcardPage() {
         
         {/* 언어 토글 */}
         <button
-          onClick={() => { setLangMode((m) => m === "en-ko" ? "ko-en" : "en-ko"); setFlipped(false); }}
+          onClick={() => { toggleLangMode(); setFlipped(false); }}
           className="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-white/[0.08] bg-white/[0.02] text-slate-400 hover:text-slate-200 hover:border-white/[0.15] transition-all spring-active"
         >
           {langMode === "en-ko" ? "EN → KO" : "KO → EN"}

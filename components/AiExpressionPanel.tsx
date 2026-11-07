@@ -42,10 +42,30 @@ function errorMessage(e: unknown): string {
   });
 }
 
-// Example sentence + where it was heard, kept under the 500-char memo limit
+const MEMO_LIMIT = 500;
+
+// Meanings in context-first order, e.g. "겪다 · 살펴보다 · 통과하다"
+function meaningsFor(s: AiSuggestion): string {
+  return s.meanings.map((m) => m.meaningKo).join(" · ").slice(0, 500);
+}
+
+// The video sentence first (🎬), then other examples; drops trailing examples to keep the timestamp link within 500 chars
 function memoFor(s: AiSuggestion, link: string): string {
-  const example = [s.exampleEn, s.exampleKo && `(${s.exampleKo})`].filter(Boolean).join(" ").slice(0, 440);
-  return [example, link].filter(Boolean).join(" · ");
+  const reserved = link ? link.length + 3 : 0;
+  const parts: string[] = [];
+  let used = 0;
+  for (const m of s.meanings) {
+    if (!m.exampleEn) continue;
+    const text = `${m.fromSentence ? "🎬 " : ""}${m.exampleEn}${m.exampleKo ? ` (${m.exampleKo})` : ""}`;
+    const cost = text.length + (parts.length > 0 ? 3 : 0);
+    if (used + cost > MEMO_LIMIT - reserved) {
+      if (parts.length === 0) parts.push(text.slice(0, MEMO_LIMIT - reserved));
+      break;
+    }
+    parts.push(text);
+    used += cost;
+  }
+  return [parts.join(" / "), link].filter(Boolean).join(" · ");
 }
 
 export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, onSaved, onToast }: Props) {
@@ -112,7 +132,7 @@ export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, on
     for (const index of [...selected].sort((a, b) => a - b)) {
       const s = result.suggestions[index];
       try {
-        const res = await pocketApi.add(s.expression.slice(0, 500), s.meaningKo.slice(0, 500), memoFor(s, link));
+        const res = await pocketApi.add(s.expression.slice(0, 500), meaningsFor(s), memoFor(s, link));
         added.push(res.data);
         finished.add(index);
       } catch (e) {
@@ -220,13 +240,27 @@ export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, on
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${TYPE_CLASS[s.type]}`}>{TYPE_LABEL[s.type]}</span>
                           {isDone && <span className="text-[10px] font-bold text-correct">담음</span>}
                         </span>
-                        <span className="block text-sm text-muted mt-0.5 break-words">{s.meaningKo}</span>
-                        {s.exampleEn && (
-                          <span className="block text-xs text-sub mt-1.5 break-words">
-                            {s.exampleEn}
-                            {s.exampleKo && <span className="block">{s.exampleKo}</span>}
-                          </span>
-                        )}
+                        <span className="block mt-1 space-y-1.5">
+                          {s.meanings.map((m, mi) => (
+                            <span key={mi} className="block">
+                              <span className="flex items-baseline gap-1.5 flex-wrap">
+                                <span className="text-sm text-foreground break-words">
+                                  {s.meanings.length > 1 && <span className="text-sub mr-1">{"①②③④"[mi]}</span>}
+                                  {m.meaningKo}
+                                </span>
+                                {m.fromSentence && (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-pocket/15 text-pocket">영상 속 뜻</span>
+                                )}
+                              </span>
+                              {m.exampleEn && (
+                                <span className="block text-xs text-muted mt-0.5 break-words">
+                                  {m.exampleEn}
+                                  {m.exampleKo && <span className="block text-sub">{m.exampleKo}</span>}
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </span>
                       </span>
                     </button>
                   </li>
