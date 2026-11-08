@@ -258,3 +258,13 @@ body {
     font-size: 16px;
   }
 }
+
+/* Landscape video takeover (listening note): app chrome and page offsets are removed so the player,
+   laid out in normal flow, fills the screen from the origin */
+html.immersive-mode [data-app-chrome] {
+  display: none !important;
+}
+html.immersive-mode main {
+  margin-left: 0 !important;
+  padding: 0 !important;
+}

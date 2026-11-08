@@ -219,7 +219,12 @@ function ListeningVideoDetail() {
     if (!immersive) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    document.documentElement.classList.add("immersive-mode");
+    window.scrollTo(0, 0);
+    return () => {
+      document.body.style.overflow = previous;
+      document.documentElement.classList.remove("immersive-mode");
+    };
   }, [immersive]);
 
   useEffect(() => {
@@ -349,9 +354,9 @@ function ListeningVideoDetail() {
   const percent = (seconds: number) => (duration > 0 ? Math.min(100, (seconds / duration) * 100) : 0);
 
   return (
-    <div className="max-w-xl mx-auto sm:px-6 sm:py-6">
+    <div className={immersive ? "" : "max-w-xl mx-auto sm:px-6 sm:py-6"}>
       {/* 헤더 */}
-      <div className="flex items-center gap-1 px-2 sm:px-0 pt-3 pb-2">
+      <div className={`flex items-center gap-1 px-2 sm:px-0 pt-3 pb-2 ${immersive ? "hidden" : ""}`}>
         <Link href="/study/listening" aria-label="영상 목록으로" className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl text-muted hover:text-foreground">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
@@ -361,12 +366,13 @@ function ListeningVideoDetail() {
       </div>
 
       {/* 영상 + 컨트롤: 스크롤하거나 키보드가 올라와도 상단에 고정 */}
-      {/* iOS Safari positions a position:fixed child relative to a sticky ancestor, so sticky is dropped in landscape mode */}
-      <div className={`bg-background pb-2 pt-[env(safe-area-inset-top)] ${immersive ? "relative z-[60]" : "sticky top-0 z-20"}`}>
+      {/* Landscape takes over the page in normal flow (no position:fixed): iOS home-screen apps mis-place fixed
+          elements after rotation, laying them out relative to this wrapper instead of the screen */}
+      <div className={immersive ? "relative z-[60] bg-black" : "sticky top-0 z-20 bg-background pb-2 pt-[env(safe-area-inset-top)]"}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
         <div
           ref={stageRef}
-          className={immersive ? "fixed inset-0 z-[60] bg-black flex items-center justify-center" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}
+          className={immersive ? "relative w-screen h-[100dvh] bg-black flex items-center justify-center overflow-hidden" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}
           style={immersive ? { paddingLeft: SAFE_SIDE, paddingRight: SAFE_SIDE } : undefined}
         >
           {/* Landscape: an exact 16:9 box, centered between equal side margins so the Dynamic Island never pushes it off-center */}
@@ -450,14 +456,14 @@ function ListeningVideoDetail() {
         </div>
 
         {playerError ? (
-          <p className="text-sm text-muted px-4 sm:px-0 mt-3">
+          <p className={`text-sm text-muted px-4 sm:px-0 mt-3 ${immersive ? "hidden" : ""}`}>
             이 영상은 다른 사이트에서 재생할 수 없어요.{" "}
             <a href={`https://youtu.be/${videoId}`} target="_blank" rel="noopener noreferrer" className="text-primary font-bold underline">
               유튜브에서 열기
             </a>
           </p>
         ) : (
-          <div className="px-4 sm:px-0">
+          <div className={`px-4 sm:px-0 ${immersive ? "hidden" : ""}`}>
             <div className="flex items-center gap-2 mt-2">
               <button onClick={rewind} disabled={!ready} aria-label="5초 뒤로" className={`h-11 px-2.5 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
                 ↺ 5
@@ -530,7 +536,7 @@ function ListeningVideoDetail() {
         )}
       </div>
 
-      <div className="px-4 sm:px-0 pb-6">
+      <div className={`px-4 sm:px-0 pb-6 ${immersive ? "hidden" : ""}`}>
         <AiExpressionPanel
           videoId={videoId}
           pauseAndGetTime={pauseAndGetTime}
