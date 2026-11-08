@@ -108,7 +108,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 z-40 border-r border-border bg-card/85 backdrop-blur-xl transition-all duration-300">
+    <aside data-app-chrome className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 z-40 border-r border-border bg-card/85 backdrop-blur-xl transition-all duration-300">
       {/* 로고 */}
       <div className="px-6 py-6 border-b border-border">
         <Link href="/" className="flex items-center gap-3 group">

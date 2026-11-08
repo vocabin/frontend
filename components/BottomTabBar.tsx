@@ -81,6 +81,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
+      data-app-chrome
       className="md:hidden fixed left-4 right-4 z-40 glass-card rounded-2xl shadow-xl overflow-hidden"
       style={{ bottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }}
     >
