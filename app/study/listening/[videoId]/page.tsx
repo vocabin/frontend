@@ -102,6 +102,11 @@ function ListeningVideoDetail() {
   const [immersive, setImmersive] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  // While true, the tap layer is lifted so the YouTube menu (captions/quality) can be used
+  const [youtubeMenuOpen, setYoutubeMenuOpen] = useState(false);
+  // iOS only lets the page start playback after the user has tapped the YouTube player once,
+  // so the tap layer is added only after the first real play
+  const [hasStarted, setHasStarted] = useState(false);
   const [layoutInfo, setLayoutInfo] = useState("");
   const clearToast = useCallback(() => setToast(""), []);
 
@@ -166,6 +171,7 @@ function ListeningVideoDetail() {
           },
           onStateChange: (e) => {
             setPlaying(e.data === PLAYING);
+            if (e.data === PLAYING) setHasStarted(true);
             if (e.data === PAUSED) savePosition();
           },
           onError: () => setPlayerError(true),
@@ -389,38 +395,57 @@ function ListeningVideoDetail() {
               </pre>
             </>
           )}
-          {immersive && (
+          {!hasStarted ? null : !youtubeMenuOpen ? (
             <>
-              {/* Tap layer: keeps YouTube's own pause button/progress bar from popping up over the captions */}
+              {/* Tap layer (both orientations): taps never reach YouTube, so it never pauses or shows its progress bar */}
               <div
                 className="absolute inset-0 z-[5]"
                 onClick={() => setOverlayVisible((v) => !v)}
                 aria-hidden
               />
-              {(overlayVisible || !playing) && (
+              {(overlayVisible || !playing) && ready && (
                 <div className="absolute inset-0 z-10 pointer-events-none fade-in">
+                  {immersive && (
+                    <button
+                      type="button"
+                      onClick={() => { setImmersive(false); setOverlayVisible(false); }}
+                      className="pointer-events-auto absolute h-11 px-4 rounded-full bg-black/60 text-white text-sm font-bold backdrop-blur"
+                      style={{ top: "calc(env(safe-area-inset-top) + 8px)", left: "calc(env(safe-area-inset-left) + 8px)" }}
+                    >
+                      ✕ 작게 보기
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => { setImmersive(false); setOverlayVisible(false); }}
-                    className="pointer-events-auto absolute h-11 px-4 rounded-full bg-black/60 text-white text-sm font-bold backdrop-blur"
-                    style={{ top: "calc(env(safe-area-inset-top) + 8px)", left: "calc(env(safe-area-inset-left) + 8px)" }}
+                    onClick={() => { setYoutubeMenuOpen(true); setOverlayVisible(false); }}
+                    className="pointer-events-auto absolute h-9 px-3 rounded-full bg-black/60 text-white text-xs font-bold backdrop-blur"
+                    style={{ top: "calc(env(safe-area-inset-top) + 8px)", right: "calc(env(safe-area-inset-right) + 8px)" }}
                   >
-                    ✕ 작게 보기
+                    자막 설정
                   </button>
-                  <div className="absolute inset-0 flex items-center justify-center gap-8">
-                    <button type="button" aria-label="5초 뒤로" onClick={() => { rewind(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-16 h-16 text-base`}>
+                  <div className={`absolute inset-0 flex items-center justify-center ${immersive ? "gap-8" : "gap-6"}`}>
+                    <button type="button" aria-label="5초 뒤로" onClick={() => { rewind(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} ${immersive ? "w-16 h-16 text-base" : "w-12 h-12 text-sm"}`}>
                       ↺ 5
                     </button>
-                    <button type="button" aria-label={playing ? "일시정지" : "재생"} onClick={() => { togglePlay(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-20 h-20 text-2xl`}>
+                    <button type="button" aria-label={playing ? "일시정지" : "재생"} onClick={() => { togglePlay(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} ${immersive ? "w-20 h-20 text-2xl" : "w-14 h-14 text-xl"}`}>
                       {playing ? "❚❚" : "▶"}
                     </button>
-                    <button type="button" aria-label="5초 앞으로" onClick={() => { forward(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} w-16 h-16 text-base`}>
+                    <button type="button" aria-label="5초 앞으로" onClick={() => { forward(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} ${immersive ? "w-16 h-16 text-base" : "w-12 h-12 text-sm"}`}>
                       5 ↻
                     </button>
                   </div>
                 </div>
               )}
             </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setYoutubeMenuOpen(false)}
+              className="absolute z-10 h-9 px-3 rounded-full bg-primary text-white text-xs font-bold shadow-lg"
+              style={{ top: "calc(env(safe-area-inset-top) + 8px)", right: "calc(env(safe-area-inset-right) + 8px)" }}
+            >
+              설정 완료
+            </button>
           )}
         </div>
 
@@ -434,11 +459,14 @@ function ListeningVideoDetail() {
         ) : (
           <div className="px-4 sm:px-0">
             <div className="flex items-center gap-2 mt-2">
-              <button onClick={rewind} disabled={!ready} aria-label="5초 뒤로" className={`h-11 px-3 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
-                ↺ 5초
+              <button onClick={rewind} disabled={!ready} aria-label="5초 뒤로" className={`h-11 px-2.5 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
+                ↺ 5
               </button>
-              <button onClick={togglePlay} disabled={!ready} className="h-11 px-5 rounded-xl text-sm font-bold text-white bg-primary disabled:opacity-40 spring-active">
-                {playing ? "일시정지" : "재생"}
+              <button onClick={togglePlay} disabled={!ready} aria-label={playing ? "일시정지" : "재생"} className="w-11 h-11 shrink-0 rounded-xl text-base font-bold text-white bg-primary disabled:opacity-40 spring-active">
+                {playing ? "❚❚" : "▶"}
+              </button>
+              <button onClick={forward} disabled={!ready} aria-label="5초 앞으로" className={`h-11 px-2.5 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
+                5 ↻
               </button>
               <button
                 onClick={() => setImmersive(true)}
@@ -459,7 +487,7 @@ function ListeningVideoDetail() {
                     onClick={() => changeRate(r)}
                     disabled={!ready}
                     aria-pressed={rate === r}
-                    className={`px-2.5 rounded-lg text-xs font-bold tabular-nums transition-colors disabled:opacity-40 ${rate === r ? "bg-primary text-white" : "text-muted"}`}
+                    className={`px-2 rounded-lg text-xs font-bold tabular-nums transition-colors disabled:opacity-40 ${rate === r ? "bg-primary text-white" : "text-muted"}`}
                   >
                     {r}x
                   </button>
