@@ -30,6 +30,10 @@ interface Props {
   resume: () => void;
   onSaved: (words: Word[]) => void;
   onToast: (message: string) => void;
+  // Prefill from the transcript: the panel is re-mounted (new key) with these values
+  initialSentence?: string;
+  initialHeardAt?: number | null;
+  initialOpen?: boolean;
 }
 
 function errorMessage(e: unknown): string {
@@ -68,10 +72,12 @@ function memoFor(s: AiSuggestion, link: string): string {
   return [parts.join(" / "), link].filter(Boolean).join(" · ");
 }
 
-export default function AiExpressionPanel({ videoId, pauseAndGetTime, resume, onSaved, onToast }: Props) {
-  const [open, setOpen]         = useState(false);
-  const [sentence, setSentence] = useState("");
-  const [heardAt, setHeardAt]   = useState<number | null>(null);
+export default function AiExpressionPanel({
+  videoId, pauseAndGetTime, resume, onSaved, onToast, initialSentence = "", initialHeardAt = null, initialOpen = false,
+}: Props) {
+  const [open, setOpen]         = useState(initialOpen);
+  const [sentence, setSentence] = useState(initialSentence);
+  const [heardAt, setHeardAt]   = useState<number | null>(initialHeardAt);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
   const [result, setResult]     = useState<AiExplainResult | null>(null);
