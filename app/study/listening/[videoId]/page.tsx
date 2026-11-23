@@ -3,11 +3,12 @@
 import { FormEvent, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { listeningApi, pocketApi, Word } from "@/lib/api";
+import { listeningApi, pocketApi, Transcript, Word } from "@/lib/api";
 import { buildTimestampLink, formatTime, parseMemoTimestamp, parseVideoId } from "@/lib/youtube";
 import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 import Toast from "@/components/Toast";
 import AiExpressionPanel from "@/components/AiExpressionPanel";
+import TranscriptPanel, { LoopRange } from "@/components/TranscriptPanel";
 import { apiErrorMessage } from "@/lib/messages";
 
 // ─── YouTube IFrame Player API (minimal typings) ──────────────────────────────
@@ -99,6 +100,10 @@ function ListeningVideoDetail() {
   const [saved, setSaved]       = useState<Word[]>([]);
   const [flashId, setFlashId]   = useState<number | null>(null);
   const [toast, setToast]       = useState("");
+  const [transcript, setTranscript] = useState<Transcript | null>(null);
+  const [transcriptStatus, setTranscriptStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [loop, setLoop]         = useState<LoopRange | null>(null);
+  const [aiPrefill, setAiPrefill] = useState<{ text: string; at: number; nonce: number } | null>(null);
   const [immersive, setImmersive] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -199,12 +204,32 @@ function ListeningVideoDetail() {
       const now = player.getCurrentTime();
       setCurrent(now);
       setDuration(player.getDuration());
+      if (loop && now >= loop.end) {
+        player.seekTo(loop.start, true);
+        setCurrent(loop.start);
+      }
       if (player.getPlayerState() === PLAYING && Math.abs(now - lastSavedPositionRef.current) >= POSITION_SAVE_INTERVAL) {
         savePosition();
       }
-    }, 500);
+    }, 250);
     return () => clearInterval(timer);
-  }, [ready, savePosition]);
+  }, [ready, savePosition, loop]);
+
+  // English captions for the transcript panel (fetched from YouTube once per video on the server)
+  useEffect(() => {
+    if (!videoId) return;
+    listeningApi.getTranscript(videoId)
+      .then((res) => { setTranscript(res.data); setTranscriptStatus("ready"); })
+      .catch(() => setTranscriptStatus("error"));
+  }, [videoId]);
+
+  const retryTranscript = () => {
+    if (!videoId) return;
+    setTranscriptStatus("loading");
+    listeningApi.getTranscript(videoId)
+      .then((res) => { setTranscript(res.data); setTranscriptStatus("ready"); })
+      .catch(() => setTranscriptStatus("error"));
+  };
 
   // Rotating the phone to landscape fills the screen with our own player, so YouTube captions stay visible
   useEffect(() => {
@@ -314,6 +339,25 @@ function ListeningVideoDetail() {
     setCurrent(seconds);
   };
 
+  const changeLoop = (range: LoopRange | null) => {
+    setLoop(range);
+    if (range) seekTo(range.start);
+  };
+
+  // Transcript line → AI panel, no typing: pause, prefill the sentence, bring the panel into view
+  const askAiAbout = (sentence: string, seconds: number) => {
+    pauseAndGetTime();
+    setLoop(null);
+    setAiPrefill({ text: sentence, at: seconds, nonce: Date.now() });
+    // Scroll below the sticky player, otherwise the prefilled input ends up hidden behind it
+    setTimeout(() => {
+      const panel = document.getElementById("ai-panel");
+      if (!panel) return;
+      const stickyHeight = document.querySelector("[data-sticky-player]")?.getBoundingClientRect().height ?? 0;
+      window.scrollTo({ top: panel.getBoundingClientRect().top + window.scrollY - stickyHeight - 8, behavior: "smooth" });
+    }, 50);
+  };
+
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!videoId || !english.trim() || !korean.trim() || saving) return;
@@ -368,7 +412,7 @@ function ListeningVideoDetail() {
       {/* 영상 + 컨트롤: 스크롤하거나 키보드가 올라와도 상단에 고정 */}
       {/* Landscape takes over the page in normal flow (no position:fixed): iOS home-screen apps mis-place fixed
           elements after rotation, laying them out relative to this wrapper instead of the screen */}
-      <div className={immersive ? "relative z-[60] bg-black" : "sticky top-0 z-20 bg-background pb-2 pt-[env(safe-area-inset-top)]"}>
+      <div data-sticky-player className={immersive ? "relative z-[60] bg-black" : "sticky top-0 z-20 bg-background pb-2 pt-[env(safe-area-inset-top)]"}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
         <div
           ref={stageRef}
@@ -537,7 +581,38 @@ function ListeningVideoDetail() {
       </div>
 
       <div className={`px-4 sm:px-0 pb-6 ${immersive ? "hidden" : ""}`}>
+        {transcriptStatus === "loading" && (
+          <p className="mt-3 px-1 text-sm text-muted">자막을 불러오는 중이에요…</p>
+        )}
+        {transcriptStatus === "error" && (
+          <div className="mt-2 flex items-center justify-between gap-2 bg-card border border-border rounded-2xl px-4 py-3">
+            <p className="text-sm text-muted">자막을 불러오지 못했어요</p>
+            <button type="button" onClick={retryTranscript} className={`h-10 px-3 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
+              다시 시도
+            </button>
+          </div>
+        )}
+        {transcriptStatus === "ready" && transcript?.available && (
+          <TranscriptPanel
+            lines={transcript.lines}
+            generated={transcript.generated}
+            currentTime={current}
+            loop={loop}
+            onPlayFrom={(seconds) => { setLoop(null); seekTo(seconds); }}
+            onLoop={changeLoop}
+            onAskAi={askAiAbout}
+          />
+        )}
+        {transcriptStatus === "ready" && transcript && !transcript.available && (
+          <p className="mt-3 px-1 text-sm text-muted">이 영상은 영어 자막이 없어요. 모르는 문장은 아래에 직접 입력해 주세요.</p>
+        )}
+
+        <div id="ai-panel">
         <AiExpressionPanel
+          key={aiPrefill?.nonce ?? "ai"}
+          initialSentence={aiPrefill?.text}
+          initialHeardAt={aiPrefill?.at ?? null}
+          initialOpen={!!aiPrefill}
           videoId={videoId}
           pauseAndGetTime={pauseAndGetTime}
           resume={resumeIfPaused}
@@ -547,6 +622,7 @@ function ListeningVideoDetail() {
           }}
           onToast={setToast}
         />
+        </div>
 
         {/* 직접 입력: 뜻까지 알고 있을 때만 쓰도록 접어 둔다 */}
         {!manualOpen ? (

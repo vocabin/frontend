@@ -164,7 +164,24 @@ export const listeningApi = {
     api.patch<ListeningVideo>(`/api/listening-videos/${videoId}/position`, { seconds: Math.floor(seconds) }),
 
   remove: (videoId: string) => api.delete(`/api/listening-videos/${videoId}`),
+
+  // First request per video fetches captions from YouTube on the server, so it can take a few seconds
+  getTranscript: (videoId: string) =>
+    api.get<Transcript>(`/api/listening-videos/${videoId}/transcript`, { timeout: 30_000 }),
 };
+
+export interface TranscriptLine {
+  start: number;
+  duration: number;
+  text: string;
+}
+
+export interface Transcript {
+  available: boolean;
+  language: string | null;
+  generated: boolean;
+  lines: TranscriptLine[];
+}
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 
