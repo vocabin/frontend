@@ -9,7 +9,6 @@ import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 import Toast from "@/components/Toast";
 import AiExpressionPanel from "@/components/AiExpressionPanel";
 import TranscriptPanel, { LoopRange } from "@/components/TranscriptPanel";
-import { BUILD_TAG, LAYOUT_DIAGNOSTICS_KEY } from "@/lib/diagnostics";
 import { useStoredFlag } from "@/lib/useStoredFlag";
 import { apiErrorMessage } from "@/lib/messages";
 
@@ -82,8 +81,6 @@ function ListeningVideoDetail() {
   const params = useParams<{ videoId: string }>();
   const searchParams = useSearchParams();
   const videoId = parseVideoId(params.videoId ?? "");
-  const [diagnosticsFromSettings] = useStoredFlag(LAYOUT_DIAGNOSTICS_KEY);
-  const debugLayout = searchParams.get("debug") === "1" || diagnosticsFromSettings;
 
   const [title, setTitle]       = useState<string | null>(null);
   const [startAt, setStartAt]   = useState<number | null>(null);
@@ -110,18 +107,14 @@ function ListeningVideoDetail() {
   const [immersive, setImmersive] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
-  // While true, the tap layer is lifted so the YouTube menu (captions/quality) can be used
-  const [youtubeMenuOpen, setYoutubeMenuOpen] = useState(false);
+  // Our own captions (current transcript sentence on the video); on unless the user turned them off
+  const [captionsOff, setCaptionsOff] = useStoredFlag("listening:captionsOff");
   // iOS only lets the page start playback after the user has tapped the YouTube player once,
   // so the tap layer is added only after the first real play
   const [hasStarted, setHasStarted] = useState(false);
-  const [layoutInfo, setLayoutInfo] = useState("");
   const clearToast = useCallback(() => setToast(""), []);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
-  const insetProbeRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const resumeAfterSaveRef = useRef(false);
   const lastSavedPositionRef = useRef(0);
@@ -270,35 +263,6 @@ function ListeningVideoDetail() {
     return () => clearTimeout(timer);
   }, [overlayVisible, playing]);
 
-  // ?debug=1 only: shows the real geometry in landscape so layout offsets can be diagnosed on the device
-  useEffect(() => {
-    if (!debugLayout || !immersive) return;
-    const rect = (el: Element | null | undefined) => {
-      if (!el) return "-";
-      const r = el.getBoundingClientRect();
-      return `x${Math.round(r.left)} w${Math.round(r.width)} h${Math.round(r.height)}`;
-    };
-    const measure = () => {
-      const probe = insetProbeRef.current ? getComputedStyle(insetProbeRef.current) : null;
-      const vv = window.visualViewport;
-      const main = document.querySelector("main");
-      setLayoutInfo([
-        `build ${BUILD_TAG} standalone ${window.matchMedia("(display-mode: standalone)").matches} cls ${document.documentElement.classList.contains("immersive-mode")}`,
-        `screen ${screen.width}x${screen.height} ${screen.orientation?.type ?? "-"} mainML ${main ? getComputedStyle(main).marginLeft : "-"}`,
-        `viewport ${document.querySelector('meta[name="viewport"]')?.getAttribute("content") ?? "-"}`,
-        `inner ${window.innerWidth}x${window.innerHeight} client ${document.documentElement.clientWidth} scrollX ${Math.round(window.scrollX)}`,
-        `vv ${vv ? `${Math.round(vv.width)}x${Math.round(vv.height)} off${Math.round(vv.offsetLeft)},${Math.round(vv.offsetTop)} s${vv.scale.toFixed(2)}` : "-"}`,
-        `safe L${probe?.paddingLeft} R${probe?.paddingRight} T${probe?.paddingTop} B${probe?.paddingBottom}`,
-        `stage ${rect(stageRef.current)}`,
-        `box ${rect(boxRef.current)}`,
-        `iframe ${rect(wrapperRef.current?.querySelector("iframe"))}`,
-      ].join("\n"));
-    };
-    measure();
-    const timer = setInterval(measure, 1000);
-    return () => clearInterval(timer);
-  }, [debugLayout, immersive]);
-
   const currentTime = () => playerRef.current?.getCurrentTime() ?? 0;
 
   // AI panel: pause like the manual form and report where the sentence was heard
@@ -342,7 +306,8 @@ function ListeningVideoDetail() {
     if (playing) player.pauseVideo(); else player.playVideo();
   };
 
-  const changeRate = (next: number) => {
+  const cycleRate = () => {
+    const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
     playerRef.current?.setPlaybackRate(next);
     setRate(next);
   };
@@ -407,6 +372,13 @@ function ListeningVideoDetail() {
     );
   }
 
+  const captionItems = transcript?.available
+    ? transcript.sentences ?? transcript.lines.map((l) => ({ start: l.start, end: l.start + l.duration, text: l.text }))
+    : [];
+  const hasCaptions = captionItems.length > 0;
+  // Show the sentence being spoken; hide it in gaps between sentences (small grace so it does not flicker)
+  const currentCaption = captionItems.findLast((item) => item.start <= current && current <= item.end + 0.4)?.text ?? null;
+
   const markers = saved.flatMap((w) => {
     const stamp = parseMemoTimestamp(w.memo);
     return stamp ? [{ id: w.id, english: w.english, seconds: stamp.seconds }] : [];
@@ -431,37 +403,28 @@ function ListeningVideoDetail() {
       <div data-sticky-player className={immersive ? "relative z-[60] bg-black" : "sticky top-0 z-20 bg-background pb-2 pt-[env(safe-area-inset-top)]"}>
         {/* Only classes change between modes, so the iframe is never re-mounted (no reload, captions keep their state) */}
         <div
-          ref={stageRef}
           className={immersive ? "relative w-screen h-[100dvh] bg-black flex items-center justify-center overflow-hidden" : "relative w-full aspect-video bg-black sm:rounded-2xl overflow-hidden"}
           style={immersive ? { paddingLeft: SAFE_SIDE, paddingRight: SAFE_SIDE } : undefined}
         >
           {/* Landscape: an exact 16:9 box, centered between equal side margins so the Dynamic Island never pushes it off-center */}
           <div
-            ref={boxRef}
             className={immersive ? "relative aspect-video" : "absolute inset-0"}
             style={immersive ? { width: "min(100%, calc(100dvh * 16 / 9))" } : undefined}
           >
             <div ref={wrapperRef} className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full" />
           </div>
-          {immersive && debugLayout && (
-            <>
-              <div
-                ref={insetProbeRef}
-                aria-hidden
-                className="absolute invisible"
-                style={{
-                  paddingLeft: "env(safe-area-inset-left)",
-                  paddingRight: "env(safe-area-inset-right)",
-                  paddingTop: "env(safe-area-inset-top)",
-                  paddingBottom: "env(safe-area-inset-bottom)",
-                }}
-              />
-              <pre className="absolute z-20 top-2 right-2 max-w-[60%] p-2 rounded bg-black/80 text-[10px] leading-tight text-lime-300 whitespace-pre-wrap pointer-events-none">
-                {layoutInfo || "measuring…"}
-              </pre>
-            </>
+          {currentCaption && !captionsOff && (
+            <div
+              aria-hidden
+              className="absolute inset-x-0 z-[6] flex justify-center px-4 pointer-events-none"
+              style={{ bottom: immersive ? "calc(env(safe-area-inset-bottom) + 18px)" : "10px" }}
+            >
+              <p className={`max-w-[92%] text-center rounded-lg bg-black/70 text-white font-semibold leading-snug px-3 py-1.5 ${immersive ? "text-lg" : "text-[13px]"}`}>
+                {currentCaption}
+              </p>
+            </div>
           )}
-          {!hasStarted ? null : !youtubeMenuOpen ? (
+          {hasStarted && (
             <>
               {/* Tap layer (both orientations): taps never reach YouTube, so it never pauses or shows its progress bar */}
               <div
@@ -481,14 +444,17 @@ function ListeningVideoDetail() {
                       ✕ 작게 보기
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => { setYoutubeMenuOpen(true); setOverlayVisible(false); }}
-                    className="pointer-events-auto absolute h-9 px-3 rounded-full bg-black/60 text-white text-xs font-bold backdrop-blur"
-                    style={{ top: "calc(env(safe-area-inset-top) + 8px)", right: "calc(env(safe-area-inset-right) + 8px)" }}
-                  >
-                    자막 설정
-                  </button>
+                  {immersive && hasCaptions && (
+                    <button
+                      type="button"
+                      onClick={() => { setCaptionsOff(!captionsOff); setOverlayVisible(true); }}
+                      aria-pressed={!captionsOff}
+                      className="pointer-events-auto absolute h-11 px-4 rounded-full bg-black/60 text-white text-sm font-bold backdrop-blur"
+                      style={{ top: "calc(env(safe-area-inset-top) + 8px)", right: "calc(env(safe-area-inset-right) + 8px)" }}
+                    >
+                      자막 {captionsOff ? "켜기" : "끄기"}
+                    </button>
+                  )}
                   <div className={`absolute inset-0 flex items-center justify-center ${immersive ? "gap-8" : "gap-6"}`}>
                     <button type="button" aria-label="5초 뒤로" onClick={() => { rewind(); setOverlayVisible(true); }} className={`${OVERLAY_BUTTON} ${immersive ? "w-16 h-16 text-base" : "w-12 h-12 text-sm"}`}>
                       ↺ 5
@@ -503,15 +469,6 @@ function ListeningVideoDetail() {
                 </div>
               )}
             </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setYoutubeMenuOpen(false)}
-              className="absolute z-10 h-9 px-3 rounded-full bg-primary text-white text-xs font-bold shadow-lg"
-              style={{ top: "calc(env(safe-area-inset-top) + 8px)", right: "calc(env(safe-area-inset-right) + 8px)" }}
-            >
-              설정 완료
-            </button>
           )}
         </div>
 
@@ -534,10 +491,20 @@ function ListeningVideoDetail() {
               <button onClick={forward} disabled={!ready} aria-label="5초 앞으로" className={`h-11 px-2.5 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
                 5 ↻
               </button>
+              {hasCaptions && (
+                <button
+                  onClick={() => setCaptionsOff(!captionsOff)}
+                  aria-pressed={!captionsOff}
+                  aria-label={captionsOff ? "자막 켜기" : "자막 끄기"}
+                  className={`h-11 px-3 rounded-xl text-sm font-bold ${captionsOff ? secondaryButtonClass : "bg-primary/10 text-primary ring-1 ring-primary/40"}`}
+                >
+                  자막
+                </button>
+              )}
               <button
                 onClick={() => setImmersive(true)}
                 disabled={!ready}
-                aria-label="크게 보기 (자막 유지)"
+                aria-label="크게 보기"
                 title="크게 보기"
                 className={`w-11 h-11 shrink-0 rounded-xl flex items-center justify-center ${secondaryButtonClass}`}
               >
@@ -546,19 +513,14 @@ function ListeningVideoDetail() {
                   <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
                 </svg>
               </button>
-              <div className="ml-auto flex h-11 rounded-xl bg-card ring-1 ring-border overflow-hidden" role="group" aria-label="재생 속도">
-                {RATES.map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => changeRate(r)}
-                    disabled={!ready}
-                    aria-pressed={rate === r}
-                    className={`min-w-11 h-full px-1.5 text-xs font-bold tabular-nums transition-colors disabled:opacity-40 ${rate === r ? "bg-primary text-white" : "text-muted"}`}
-                  >
-                    {r}x
-                  </button>
-                ))}
-              </div>
+              <button
+                onClick={cycleRate}
+                disabled={!ready}
+                aria-label={`재생 속도 ${rate}배, 누르면 바뀜`}
+                className={`ml-auto min-w-12 h-11 px-2 rounded-xl text-sm font-bold tabular-nums ${rate === 1 ? secondaryButtonClass : "bg-primary/10 text-primary ring-1 ring-primary/40"}`}
+              >
+                {rate}x
+              </button>
             </div>
 
             {/* 타임라인: 이 영상에서 표현을 담은 시점 */}
