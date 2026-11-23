@@ -11,7 +11,7 @@ import { useLangMode } from "@/lib/useLangMode";
 
 type Tab = "review" | "list";
 
-function MemoView({ memo, light = false }: { memo?: string | null; light?: boolean }) {
+function MemoView({ memo, light = false, withLink = true }: { memo?: string | null; light?: boolean; withLink?: boolean }) {
   if (!memo) return null;
   const stamp = parseMemoTimestamp(memo);
   const textClass = light ? "text-blue-100/90" : "text-slate-500";
@@ -19,15 +19,15 @@ function MemoView({ memo, light = false }: { memo?: string | null; light?: boole
   return (
     <div className="flex flex-wrap items-center gap-2">
       {stamp.rest && <p className={`text-xs ${textClass} break-words`}>{stamp.rest}</p>}
-      <Link
+      {withLink && <Link
         href={listeningHref(stamp.videoId, stamp.seconds)}
         onClick={(e) => e.stopPropagation()}
-        className={`text-[11px] font-bold px-2 py-1 rounded-lg transition-all spring-active ${
+        className={`inline-flex items-center min-h-11 text-xs font-bold px-3 rounded-lg transition-all spring-active ${
           light ? "bg-white/15 text-white hover:bg-white/25" : "bg-pocket/10 text-pocket hover:bg-pocket/20"
         }`}
       >
         ▶ {formatTime(stamp.seconds)} 듣기
-      </Link>
+      </Link>}
     </div>
   );
 }
@@ -141,7 +141,7 @@ export default function PocketPage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`h-10 rounded-lg text-sm font-bold transition-all ${
+            className={`h-11 rounded-lg text-sm font-bold transition-all ${
               tab === key ? "bg-card text-primary shadow-sm" : "text-muted hover:text-foreground"
             }`}
           >
@@ -224,7 +224,7 @@ export default function PocketPage() {
                 <button
                   onClick={() => { toggleLangMode(); setFlipped(false); }}
                   aria-label={langMode === "ko-en" ? "영어 보고 뜻 맞추기로 바꾸기" : "뜻 보고 영어 맞추기로 바꾸기"}
-                  className={`h-9 px-3 text-[11px] font-bold rounded-lg ${secondaryButtonClass}`}
+                  className={`h-11 px-3 text-xs font-bold rounded-xl ${secondaryButtonClass}`}
                 >
                   {langMode === "ko-en" ? "KO → EN" : "EN → KO"}
                 </button>
@@ -254,10 +254,23 @@ export default function PocketPage() {
                     <p className={`${langMode === "ko-en" ? "text-3xl" : "text-2xl"} font-extrabold text-white text-center leading-snug tracking-tight my-6 break-words`}>
                       {langMode === "ko-en" ? word.english : word.korean}
                     </p>
-                    <MemoView memo={word.memo} light />
+                    <MemoView memo={word.memo} light withLink={false} />
                   </div>
                 </div>
               </div>
+
+              {/* The scene link lives outside the card: a link inside the card's button would be a nested control */}
+              {flipped && (() => {
+                const stamp = parseMemoTimestamp(word.memo);
+                return stamp ? (
+                  <Link
+                    href={listeningHref(stamp.videoId, stamp.seconds)}
+                    className="-mt-2 mb-4 flex items-center justify-center h-11 rounded-xl bg-pocket/10 text-pocket text-sm font-bold"
+                  >
+                    ▶ {formatTime(stamp.seconds)} 장면 다시 듣기
+                  </Link>
+                ) : null;
+              })()}
 
               {/* Screen readers hear the answer when the card flips */}
               <p className="sr-only" aria-live="polite">{flipped ? `정답: ${langMode === "ko-en" ? word.english : word.korean}` : ""}</p>

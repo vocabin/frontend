@@ -210,7 +210,7 @@ function SetFlashcardContent() {
         </button>
 
         {/* 진행률 바 */}
-        <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
             style={{ width: `${(index / words.length) * 100}%` }} 
@@ -254,7 +254,7 @@ function SetFlashcardContent() {
         >
           {/* 앞면 */}
           <div
-            className="card-face w-full min-h-[300px] glass-card rounded-3xl flex flex-col items-center justify-between px-8 py-10 border-white/[0.06] bg-[#0F121F]/80"
+            className="card-face w-full min-h-[300px] bg-card border border-border rounded-3xl flex flex-col items-center justify-between px-8 py-10"
           >
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{frontLabel}</p>
             <p className="text-3xl font-extrabold text-foreground text-center leading-snug tracking-tight my-8">{frontText}</p>

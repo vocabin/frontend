@@ -153,7 +153,7 @@ function ListeningLibrary() {
                         {video.title ?? "제목을 불러오는 중이에요"}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${count > 0 ? "bg-pocket/15 text-pocket" : "bg-background text-sub"}`}>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${count > 0 ? "bg-pocket/15 text-pocket" : "bg-background text-muted"}`}>
                           ★ {count}
                         </span>
                         <span className="text-xs text-muted">

@@ -183,7 +183,7 @@ export default function FlashcardPage() {
     <div className="max-w-xl mx-auto px-6 py-10 page-in">
       {/* 진행률 바 */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
             style={{ width: `${(index / words.length) * 100}%` }} 
@@ -194,7 +194,7 @@ export default function FlashcardPage() {
         {/* 언어 토글 */}
         <button
           onClick={() => { toggleLangMode(); setFlipped(false); }}
-          className="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-white/[0.08] bg-white/[0.02] text-slate-400 hover:text-slate-200 hover:border-white/[0.15] transition-all spring-active"
+          className="h-11 px-3 text-xs font-bold rounded-xl border border-border bg-card text-muted hover:text-foreground transition-all spring-active"
         >
           {langMode === "en-ko" ? "EN → KO" : "KO → EN"}
         </button>
@@ -202,7 +202,7 @@ export default function FlashcardPage() {
         {/* 포켓 담기 버튼 */}
         <button
           onClick={() => setPocketWord(word)}
-          className="p-1.5 rounded-lg border border-white/[0.08] text-slate-500 hover:text-pocket transition-all spring-active"
+          className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl border border-border bg-card text-muted hover:text-pocket transition-all spring-active"
           title="포켓에 담기"
           aria-label="포켓에 담기"
         >
@@ -214,7 +214,7 @@ export default function FlashcardPage() {
         {/* 편집 버튼 */}
         <button
           onClick={() => { setEditingWord(word); setEditEnglish(word.english); setEditKorean(word.korean); }}
-          className="p-1.5 rounded-lg border border-white/[0.08] text-slate-500 hover:text-primary transition-all spring-active"
+          className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl border border-border bg-card text-muted hover:text-primary transition-all spring-active"
           title="단어 즉시 수정"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -239,7 +239,7 @@ export default function FlashcardPage() {
         >
           {/* 앞면 */}
           <div
-            className="card-face w-full min-h-[300px] glass-card rounded-3xl flex flex-col items-center justify-between px-8 py-10 border-white/[0.06] bg-[#0F121F]/80"
+            className="card-face w-full min-h-[300px] bg-card border border-border rounded-3xl flex flex-col items-center justify-between px-8 py-10"
           >
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{frontLabel}</p>
             <p className="text-3xl font-extrabold text-foreground text-center leading-snug tracking-tight my-8">{frontText}</p>

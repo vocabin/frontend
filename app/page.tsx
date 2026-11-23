@@ -111,7 +111,7 @@ export default function HomePage() {
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">안녕하세요 👋</h1>
           <p className="text-slate-400 mt-2 text-sm font-medium">오늘도 꾸준하게 단어 복습을 이어가 볼까요?</p>
         </div>
-        <Link href="/stats" className="md:hidden text-xs font-bold text-primary px-3 py-2 rounded-xl bg-primary/10 spring-active">
+        <Link href="/stats" className="md:hidden inline-flex items-center h-11 px-4 text-sm font-bold text-primary rounded-xl bg-primary/10 spring-active">
           통계 보기
         </Link>
       </div>
@@ -262,7 +262,7 @@ export default function HomePage() {
       {/* 세트별 진행률 */}
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-bold text-foreground tracking-tight">내 단어 세트</h2>
-        <Link href="/words/upload" className="text-sm text-primary font-semibold hover:text-blue-400 hover:underline transition-colors">
+        <Link href="/words/upload" className="inline-flex items-center h-11 px-2 -mr-2 text-sm text-primary font-semibold hover:underline transition-colors">
           + 새 세트 업로드
         </Link>
       </div>
@@ -273,7 +273,7 @@ export default function HomePage() {
           return (
             <div key={set.wordSetId} className="glass-card rounded-2xl p-6 transition-all duration-300 hover:border-primary/20">
               <div className="flex items-start justify-between mb-4">
-                <Link href={`/words/${set.wordSetId}`} className="flex-1 min-w-0 group">
+                <Link href={`/words/${set.wordSetId}`} className="flex-1 min-w-0 min-h-11 group">
                   <h3 className="font-bold text-foreground text-[15px] group-hover:text-primary transition-colors truncate tracking-tight">{set.name}</h3>
                   <p className="text-xs text-muted mt-1 font-semibold">
                     총 {set.totalWords}단어 중 {set.studiedWords}개 학습 완료
@@ -294,13 +294,13 @@ export default function HomePage() {
               <div className="grid grid-cols-2 gap-3">
                 <Link
                   href={`/words/${set.wordSetId}`}
-                  className="block text-center py-3 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
+                  className="flex items-center justify-center h-11 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
                 >
                   단어 목록
                 </Link>
                 <Link
                   href={`/study/weak?wordSetId=${set.wordSetId}`}
-                  className="block text-center py-3 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
+                  className="flex items-center justify-center h-11 bg-background border border-border hover:bg-primary/[0.03] text-muted hover:text-foreground text-xs font-semibold rounded-xl spring-active transition-all"
                 >
                   취약 단어
                 </Link>

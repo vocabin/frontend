@@ -26,8 +26,8 @@
   --text-muted: #94A3B8;
   --text-sub: #8391A7;
   
-  --primary: #3B82F6;
-  --primary-hover: #2563EB;
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
   --correct: #10B981;
   --wrong: #EF4444;
   --pocket: #F5B544;
@@ -57,7 +57,7 @@
   --primary-hover: #1A56DB;
   --correct: #0E9F6E;
   --wrong: #E02424;
-  --pocket: #B7791F;
+  --pocket: #8A5A0B;
 
   --glass-bg: rgba(255, 255, 255, 0.85);
   --shadow-color: rgba(15, 23, 42, 0.08);
@@ -267,4 +267,10 @@ html.immersive-mode [data-app-chrome] {
 html.immersive-mode main {
   margin-left: 0 !important;
   padding: 0 !important;
+}
+
+/* Dark mode: white text on filled blue needs the deeper --primary, but blue text on the dark
+   background needs a lighter blue to stay readable (WCAG 4.5:1 both ways) */
+:root:not(.light) .text-primary {
+  color: #60A5FA;
 }
