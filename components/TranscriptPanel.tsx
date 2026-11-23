@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { TranscriptLine } from "@/lib/api";
 import { formatTime } from "@/lib/youtube";
 import { secondaryButtonClass } from "@/lib/ui";
+import { useStoredFlag } from "@/lib/useStoredFlag";
 
 const MAX_SELECTED_LINES = 4;
 const FOLLOW_PAUSE_MS = 4000; // stop auto-scrolling for a moment after the user scrolls the list
 const ACTION_BAR_SPACE = 180;  // floating action bar + bottom tab bar, measured from the bottom of the screen
+const EXPANDED_KEY = "listening:transcriptExpanded";
 
 export interface LoopRange {
   start: number;
@@ -32,6 +34,8 @@ interface Selection {
 
 export default function TranscriptPanel({ lines, generated, currentTime, loop, onPlayFrom, onLoop, onAskAi }: Props) {
   const [selection, setSelection] = useState<Selection | null>(null);
+  // Collapsed by default so the page stays short; the last choice is remembered on this device
+  const [expanded, setExpanded] = useStoredFlag(EXPANDED_KEY);
   const listRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const lastUserScrollRef = useRef(0);
@@ -42,6 +46,11 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
     return index;
   }, [lines, currentTime]);
 
+  const toggleExpanded = () => {
+    if (expanded) setSelection(null);
+    setExpanded(!expanded);
+  };
+
   // Keep the line being spoken in view, unless the user is browsing the list or has a selection
   useEffect(() => {
     const list = listRef.current;
@@ -49,7 +58,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
     if (!list || !row || selection) return;
     if (Date.now() - lastUserScrollRef.current < FOLLOW_PAUSE_MS) return;
     list.scrollTo({ top: row.offsetTop - list.clientHeight / 3, behavior: "smooth" });
-  }, [activeIndex, selection]);
+  }, [activeIndex, selection, expanded]);
 
   // Lift the picked line above the floating action bar so the next line stays tappable too
   const keepAboveActionBar = (index: number) => {
@@ -83,19 +92,48 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
 
   return (
     <section aria-labelledby="transcript-title" className="mt-2 bg-card border border-border rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
+      <div className="flex items-center justify-between gap-2 pl-4 pr-2 pt-2 pb-1">
         <h2 id="transcript-title" className="text-sm font-bold text-foreground">
           자막 스크립트
           {generated && <span className="ml-2 text-[11px] font-semibold text-sub">자동 생성</span>}
         </h2>
-        {loop && (
-          <button type="button" onClick={() => onLoop(null)} className="h-9 px-3 rounded-full bg-pocket/15 text-pocket text-xs font-bold">
-            반복 중 {formatTime(loop.start)}–{formatTime(loop.end)} · 끄기
+        <div className="flex items-center gap-1">
+          {loop && (
+            <button type="button" onClick={() => onLoop(null)} className="h-11 px-3 rounded-full bg-pocket/15 text-pocket text-xs font-bold">
+              반복 중 · 끄기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={toggleExpanded}
+            aria-expanded={expanded}
+            aria-controls="transcript-lines"
+            className="h-11 px-3 rounded-xl text-sm font-bold text-primary"
+          >
+            {expanded ? "접기 ▴" : "펼치기 ▾"}
           </button>
-        )}
+        </div>
       </div>
 
+      {!expanded && (
+        // Collapsed: just the line being spoken; tapping it opens the full script
+        <button
+          type="button"
+          onClick={toggleExpanded}
+          className="w-full text-left flex gap-3 px-4 pb-3 pt-1 min-h-11"
+        >
+          <span className="shrink-0 w-11 pt-0.5 text-xs tabular-nums text-primary font-bold">
+            {activeIndex >= 0 ? formatTime(lines[activeIndex].start) : "0:00"}
+          </span>
+          <span className="flex-1 text-[15px] leading-snug text-foreground line-clamp-2">
+            {activeIndex >= 0 ? lines[activeIndex].text : lines[0]?.text}
+          </span>
+        </button>
+      )}
+
       <div
+        id="transcript-lines"
+        hidden={!expanded}
         ref={listRef}
         onScroll={() => { lastUserScrollRef.current = Date.now(); }}
         onTouchMove={() => { lastUserScrollRef.current = Date.now(); }}
@@ -126,7 +164,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
         })}
       </div>
 
-      {selection && selectedRange && (
+      {expanded && selection && selectedRange && (
         // Floats just above the bottom tab bar on phones (inline under the list on wider screens),
         // so the actions are always visible right after picking a line
         <div

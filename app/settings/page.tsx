@@ -1,5 +1,7 @@
 "use client";
 
+import { LAYOUT_DIAGNOSTICS_KEY } from "@/lib/diagnostics";
+import { useStoredFlag } from "@/lib/useStoredFlag";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -82,6 +84,9 @@ export default function SettingsPage() {
     const activeTheme = document.documentElement.classList.contains("light") ? "light" : "dark";
     setTheme(activeTheme);
   }, []);
+
+  const [layoutDiagnostics, setLayoutDiagnostics] = useStoredFlag(LAYOUT_DIAGNOSTICS_KEY);
+  const toggleLayoutDiagnostics = () => setLayoutDiagnostics(!layoutDiagnostics);
 
   const toggleThemeState = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
@@ -297,6 +302,24 @@ export default function SettingsPage() {
           >
             <span className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${theme === "light" ? "bg-primary" : "bg-slate-400/60"}`}>
               <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${theme === "light" ? "translate-x-5" : "translate-x-0"}`} />
+            </span>
+          </button>
+        </div>
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">화면 진단 정보</p>
+            <p className="text-xs text-slate-500 mt-1 font-medium">리스닝 가로 보기에서 화면 크기와 위치 값을 표시해요 (문제 확인용)</p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleLayoutDiagnostics}
+            role="switch"
+            aria-checked={layoutDiagnostics}
+            aria-label="화면 진단 정보"
+            className="shrink-0 w-14 h-11 flex items-center justify-center cursor-pointer"
+          >
+            <span className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${layoutDiagnostics ? "bg-primary" : "bg-slate-400/60"}`}>
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${layoutDiagnostics ? "translate-x-5" : "translate-x-0"}`} />
             </span>
           </button>
         </div>

@@ -9,6 +9,8 @@ import { fieldClass, secondaryButtonClass } from "@/lib/ui";
 import Toast from "@/components/Toast";
 import AiExpressionPanel from "@/components/AiExpressionPanel";
 import TranscriptPanel, { LoopRange } from "@/components/TranscriptPanel";
+import { BUILD_TAG, LAYOUT_DIAGNOSTICS_KEY } from "@/lib/diagnostics";
+import { useStoredFlag } from "@/lib/useStoredFlag";
 import { apiErrorMessage } from "@/lib/messages";
 
 // ─── YouTube IFrame Player API (minimal typings) ──────────────────────────────
@@ -80,7 +82,8 @@ function ListeningVideoDetail() {
   const params = useParams<{ videoId: string }>();
   const searchParams = useSearchParams();
   const videoId = parseVideoId(params.videoId ?? "");
-  const debugLayout = searchParams.get("debug") === "1";
+  const [diagnosticsFromSettings] = useStoredFlag(LAYOUT_DIAGNOSTICS_KEY);
+  const debugLayout = searchParams.get("debug") === "1" || diagnosticsFromSettings;
 
   const [title, setTitle]       = useState<string | null>(null);
   const [startAt, setStartAt]   = useState<number | null>(null);
@@ -269,7 +272,10 @@ function ListeningVideoDetail() {
     const measure = () => {
       const probe = insetProbeRef.current ? getComputedStyle(insetProbeRef.current) : null;
       const vv = window.visualViewport;
+      const main = document.querySelector("main");
       setLayoutInfo([
+        `build ${BUILD_TAG} standalone ${window.matchMedia("(display-mode: standalone)").matches} cls ${document.documentElement.classList.contains("immersive-mode")}`,
+        `screen ${screen.width}x${screen.height} ${screen.orientation?.type ?? "-"} mainML ${main ? getComputedStyle(main).marginLeft : "-"}`,
         `inner ${window.innerWidth}x${window.innerHeight} client ${document.documentElement.clientWidth} scrollX ${Math.round(window.scrollX)}`,
         `vv ${vv ? `${Math.round(vv.width)}x${Math.round(vv.height)} off${Math.round(vv.offsetLeft)},${Math.round(vv.offsetTop)} s${vv.scale.toFixed(2)}` : "-"}`,
         `safe L${probe?.paddingLeft} R${probe?.paddingRight} T${probe?.paddingTop} B${probe?.paddingBottom}`,
