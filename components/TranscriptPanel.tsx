@@ -10,6 +10,18 @@ const MAX_SELECTED_SENTENCES = 3;
 const FOLLOW_PAUSE_MS = 4000; // stop auto-scrolling for a moment after the user scrolls the list
 const ACTION_BAR_SPACE = 180;  // floating action bar + bottom tab bar, measured from the bottom of the screen
 const EXPANDED_KEY = "listening:transcriptExpanded";
+const AI_SENTENCE_LIMIT = 300; // the AI accepts up to 300 characters
+
+// Joins whole sentences up to the limit, dropping trailing ones instead of cutting a sentence in half
+function joinWithinLimit(sentences: string[]): string {
+  let text = "";
+  for (const sentence of sentences) {
+    const next = text ? `${text} ${sentence}` : sentence;
+    if (next.length > AI_SENTENCE_LIMIT) break;
+    text = next;
+  }
+  return text || sentences[0].slice(0, AI_SENTENCE_LIMIT);
+}
 
 export interface LoopRange {
   start: number;
@@ -186,7 +198,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
             </button>
             <button
               type="button"
-              onClick={() => { onAskAi(selectedText.slice(0, 300), selectedRange.start); setSelection(null); }}
+              onClick={() => { onAskAi(joinWithinLimit(selected.map((line) => line.text.trim())), selectedRange.start); setSelection(null); }}
               className="h-11 rounded-xl text-sm font-bold bg-primary text-white spring-active"
             >
               ✦ AI로 풀기
