@@ -508,7 +508,7 @@ function ListeningVideoDetail() {
           </p>
         ) : (
           <div className={`px-4 sm:px-0 ${immersive ? "hidden" : ""}`}>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1.5 mt-2">
               <button onClick={rewind} disabled={!ready} aria-label="5초 뒤로" className={`h-11 px-2.5 rounded-xl text-sm font-bold ${secondaryButtonClass}`}>
                 ↺ 5
               </button>
@@ -530,14 +530,14 @@ function ListeningVideoDetail() {
                   <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
                 </svg>
               </button>
-              <div className="ml-auto flex h-11 rounded-xl bg-card border border-border p-1" role="group" aria-label="재생 속도">
+              <div className="ml-auto flex h-11 rounded-xl bg-card ring-1 ring-border overflow-hidden" role="group" aria-label="재생 속도">
                 {RATES.map((r) => (
                   <button
                     key={r}
                     onClick={() => changeRate(r)}
                     disabled={!ready}
                     aria-pressed={rate === r}
-                    className={`px-2 rounded-lg text-xs font-bold tabular-nums transition-colors disabled:opacity-40 ${rate === r ? "bg-primary text-white" : "text-muted"}`}
+                    className={`min-w-11 h-full px-1.5 text-xs font-bold tabular-nums transition-colors disabled:opacity-40 ${rate === r ? "bg-primary text-white" : "text-muted"}`}
                   >
                     {r}x
                   </button>
@@ -570,7 +570,7 @@ function ListeningVideoDetail() {
                     </button>
                   ))}
                 </div>
-                <div className="flex justify-between -mt-2 text-[11px] font-semibold tabular-nums text-sub">
+                <div className="flex justify-between -mt-2 text-[11px] font-semibold tabular-nums text-muted">
                   <span>{formatTime(current)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>

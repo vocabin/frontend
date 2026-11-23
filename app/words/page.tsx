@@ -94,7 +94,7 @@ export default function WordsPage() {
         </div>
         <Link
           href="/words/upload"
-          className="px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
+          className="inline-flex items-center h-11 px-4 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-hover shadow-lg shadow-primary/10 transition-all spring-active"
         >
           + 단어 업로드
         </Link>
@@ -106,10 +106,10 @@ export default function WordsPage() {
           <button
             key={set.id}
             onClick={() => setSelectedSetId(set.id)}
-            className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 spring-active ${
+            className={`flex-shrink-0 h-11 px-4 rounded-xl text-sm font-bold transition-all shrink-0 spring-active ${
               selectedSetId === set.id
                 ? "bg-primary text-white shadow-md shadow-primary/10"
-                : "bg-white/[0.02] border border-white/[0.08] text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+                : "bg-card border border-border text-muted hover:text-foreground"
             }`}
           >
             {set.name}
@@ -169,7 +169,7 @@ export default function WordsPage() {
         {words.length === 0 && (
           <div className="text-center py-20 text-slate-500">
             <p className="text-sm font-semibold text-slate-400">이 세트에는 단어가 없습니다</p>
-            <Link href="/words/upload" className="mt-4 inline-block text-xs bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-xl font-bold hover:bg-primary/20 transition-all spring-active">
+            <Link href="/words/upload" className="mt-4 inline-flex items-center h-11 text-sm bg-primary/10 border border-primary/20 text-primary px-4 rounded-xl font-bold hover:bg-primary/20 transition-all spring-active">
               단어 업로드하기 →
             </Link>
           </div>

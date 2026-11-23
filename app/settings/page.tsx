@@ -246,12 +246,14 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDailyGoal((v) => Math.max(5, v - 5))}
-              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
+              aria-label="하루 목표 5개 줄이기"
+              className="w-11 h-11 rounded-xl border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
             >−</button>
             <span className="text-sm font-extrabold text-primary w-8 text-center tabular-nums">{dailyGoal}</span>
             <button
               onClick={() => setDailyGoal((v) => Math.min(100, v + 5))}
-              className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
+              aria-label="하루 목표 5개 늘리기"
+              className="w-11 h-11 rounded-xl border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
             >+</button>
           </div>
         </div>
@@ -263,9 +265,14 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={() => setRandomOrder((v) => !v)}
-            className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${randomOrder ? "bg-primary" : "bg-slate-800"}`}
+            role="switch"
+            aria-checked={randomOrder}
+            aria-label="랜덤 순서"
+            className="shrink-0 w-14 h-11 flex items-center justify-center cursor-pointer"
           >
-            <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${randomOrder ? "translate-x-5" : "translate-x-0"}`} />
+            <span className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${randomOrder ? "bg-primary" : "bg-slate-400/60"}`}>
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${randomOrder ? "translate-x-5" : "translate-x-0"}`} />
+            </span>
           </button>
         </div>
 
@@ -283,9 +290,14 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={toggleThemeState}
-            className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${theme === "light" ? "bg-primary" : "bg-slate-800"}`}
+            role="switch"
+            aria-checked={theme === "light"}
+            aria-label="라이트 모드"
+            className="shrink-0 w-14 h-11 flex items-center justify-center cursor-pointer"
           >
-            <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${theme === "light" ? "translate-x-5" : "translate-x-0"}`} />
+            <span className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${theme === "light" ? "bg-primary" : "bg-slate-400/60"}`}>
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${theme === "light" ? "translate-x-5" : "translate-x-0"}`} />
+            </span>
           </button>
         </div>
       </section>
@@ -300,10 +312,15 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setAutoImportConfig({ ...autoImportConfig, enabled: !autoImportConfig.enabled })}
-              className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${autoImportConfig.enabled ? "bg-primary" : "bg-slate-800"}`}
-            >
+              role="switch"
+            aria-checked={autoImportConfig.enabled}
+            aria-label="퀴즐렛 자동 임포트"
+            className="shrink-0 w-14 h-11 flex items-center justify-center cursor-pointer"
+          >
+            <span className={`relative w-12 h-7 rounded-full transition-colors duration-300 ${autoImportConfig.enabled ? "bg-primary" : "bg-slate-400/60"}`}>
               <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow toggle-dot ${autoImportConfig.enabled ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
+            </span>
+          </button>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -313,7 +330,7 @@ export default function SettingsPage() {
                 <button 
                   key={d} 
                   onClick={() => setAutoImportConfig({ ...autoImportConfig, dayOfWeek: d })}
-                  className={`w-9 h-9 rounded-lg text-xs font-bold transition-all shrink-0 spring-active cursor-pointer ${
+                  className={`w-11 h-11 rounded-xl text-xs font-bold transition-all shrink-0 spring-active cursor-pointer ${
                     autoImportConfig.dayOfWeek === d 
                       ? "bg-primary text-white shadow-md shadow-primary/10" 
                       : "bg-card border border-border text-muted hover:bg-primary/[0.03] hover:text-foreground"
@@ -330,12 +347,14 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.max(0, autoImportConfig.hour - 1) })}
-                className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
+              aria-label="연동 시간 1시간 앞당기기"
+                className="w-11 h-11 rounded-xl border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
               >−</button>
               <span className="text-sm font-extrabold text-primary w-12 text-center tabular-nums">{String(autoImportConfig.hour).padStart(2,"0")}:00</span>
               <button 
                 onClick={() => setAutoImportConfig({ ...autoImportConfig, hour: Math.min(23, autoImportConfig.hour + 1) })}
-                className="w-8 h-8 rounded-lg border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
+              aria-label="연동 시간 1시간 늦추기"
+                className="w-11 h-11 rounded-xl border border-border bg-card flex items-center justify-center text-muted hover:bg-primary/[0.03] hover:text-foreground transition-all spring-active font-bold cursor-pointer"
               >+</button>
             </div>
           </div>
