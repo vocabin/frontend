@@ -249,9 +249,18 @@ function ListeningVideoDetail() {
     document.body.style.overflow = "hidden";
     document.documentElement.classList.add("immersive-mode");
     window.scrollTo(0, 0);
+    // With viewport-fit=cover, iOS hands the notch inset (env(safe-area-inset-*)) to the YouTube iframe too,
+    // and the player shifts the video by it, cropping one side. Without it the insets are 0 and Safari
+    // letterboxes the notch area itself.
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const previousViewport = viewportMeta?.getAttribute("content") ?? null;
+    if (viewportMeta && previousViewport) {
+      viewportMeta.setAttribute("content", previousViewport.replace(/,\s*viewport-fit=cover/, ""));
+    }
     return () => {
       document.body.style.overflow = previous;
       document.documentElement.classList.remove("immersive-mode");
+      if (viewportMeta && previousViewport) viewportMeta.setAttribute("content", previousViewport);
     };
   }, [immersive]);
 
@@ -276,6 +285,7 @@ function ListeningVideoDetail() {
       setLayoutInfo([
         `build ${BUILD_TAG} standalone ${window.matchMedia("(display-mode: standalone)").matches} cls ${document.documentElement.classList.contains("immersive-mode")}`,
         `screen ${screen.width}x${screen.height} ${screen.orientation?.type ?? "-"} mainML ${main ? getComputedStyle(main).marginLeft : "-"}`,
+        `viewport ${document.querySelector('meta[name="viewport"]')?.getAttribute("content") ?? "-"}`,
         `inner ${window.innerWidth}x${window.innerHeight} client ${document.documentElement.clientWidth} scrollX ${Math.round(window.scrollX)}`,
         `vv ${vv ? `${Math.round(vv.width)}x${Math.round(vv.height)} off${Math.round(vv.offsetLeft)},${Math.round(vv.offsetTop)} s${vv.scale.toFixed(2)}` : "-"}`,
         `safe L${probe?.paddingLeft} R${probe?.paddingRight} T${probe?.paddingTop} B${probe?.paddingBottom}`,
@@ -600,7 +610,7 @@ function ListeningVideoDetail() {
         )}
         {transcriptStatus === "ready" && transcript?.available && (
           <TranscriptPanel
-            lines={transcript.lines}
+            lines={transcript.sentences ?? transcript.lines.map((l) => ({ start: l.start, end: l.start + l.duration, text: l.text }))}
             generated={transcript.generated}
             currentTime={current}
             loop={loop}

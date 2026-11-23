@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { TranscriptLine } from "@/lib/api";
+import { TranscriptSentence } from "@/lib/api";
 import { formatTime } from "@/lib/youtube";
 import { secondaryButtonClass } from "@/lib/ui";
 import { useStoredFlag } from "@/lib/useStoredFlag";
 
-const MAX_SELECTED_LINES = 4;
+const MAX_SELECTED_SENTENCES = 3;
 const FOLLOW_PAUSE_MS = 4000; // stop auto-scrolling for a moment after the user scrolls the list
 const ACTION_BAR_SPACE = 180;  // floating action bar + bottom tab bar, measured from the bottom of the screen
 const EXPANDED_KEY = "listening:transcriptExpanded";
@@ -17,7 +17,7 @@ export interface LoopRange {
 }
 
 interface Props {
-  lines: TranscriptLine[];
+  lines: TranscriptSentence[];
   generated: boolean;
   currentTime: number;
   loop: LoopRange | null;
@@ -78,7 +78,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
       const from = Math.min(current.anchor, index);
       const to = Math.max(current.anchor, index);
       // Keep the phrase short enough to be one or two sentences
-      if (to - from + 1 > MAX_SELECTED_LINES) return { anchor: index, from: index, to: index };
+      if (to - from + 1 > MAX_SELECTED_SENTENCES) return { anchor: index, from: index, to: index };
       return { ...current, from, to };
     });
   };
@@ -86,7 +86,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
   const selected = selection ? lines.slice(selection.from, selection.to + 1) : [];
   const selectedText = selected.map((line) => line.text).join(" ").replace(/\s+/g, " ").trim();
   const selectedRange: LoopRange | null = selected.length
-    ? { start: selected[0].start, end: selected[selected.length - 1].start + selected[selected.length - 1].duration }
+    ? { start: selected[0].start, end: selected[selected.length - 1].end }
     : null;
   const loopingSelection = loop && selectedRange && Math.abs(loop.start - selectedRange.start) < 0.01;
 
@@ -195,7 +195,7 @@ export default function TranscriptPanel({ lines, generated, currentTime, loop, o
               ✕
             </button>
           </div>
-          <p className="hidden md:block text-[11px] text-sub mt-2">이어지는 줄을 더 누르면 최대 {MAX_SELECTED_LINES}줄까지 함께 고를 수 있어요</p>
+          <p className="hidden md:block text-[11px] text-sub mt-2">이어지는 문장을 더 누르면 최대 {MAX_SELECTED_SENTENCES}문장까지 함께 고를 수 있어요</p>
         </div>
       )}
     </section>

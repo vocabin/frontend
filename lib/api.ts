@@ -176,11 +176,18 @@ export interface TranscriptLine {
   text: string;
 }
 
+export interface TranscriptSentence {
+  start: number;
+  end: number;
+  text: string;
+}
+
 export interface Transcript {
   available: boolean;
   language: string | null;
   generated: boolean;
   lines: TranscriptLine[];
+  sentences?: TranscriptSentence[]; // caption lines regrouped into whole sentences
 }
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
