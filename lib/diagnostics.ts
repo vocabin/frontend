@@ -3,4 +3,4 @@
 export const LAYOUT_DIAGNOSTICS_KEY = "vocabin:layoutDiagnostics";
 
 // Shown in the diagnostics overlay to confirm which build the phone is actually running
-export const BUILD_TAG = "2026-11-23-landscape-diag";
+export const BUILD_TAG = "2026-11-23-viewport-fit-off";
